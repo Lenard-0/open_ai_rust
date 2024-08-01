@@ -2,5 +2,17 @@
 name = "open_ai_rust"
 version = "0.1.0"
 edition = "2021"
+authors = ["Lachy Hislop <lachie.hislop@gmail.com>"]
+description = "Open AI SDK for Rust. To my knowledge, the only fully comprehensive and up-to-date Open AI crate built in and for Rust. Provides both low-level control with high level ergonomics for doing cool things (the whole reason we use Rust in the first place). Is maintained and has been used and tested in products used in production."
+license = "Apache-2.0"
+repository = "https://github.com/Lenard-0/open_ai_rust"
+homepage = "https://github.com/Lenard-0/open_ai_rust"
+documentation = "https://docs.rs/open_ai_rust"
+keywords = ["OpenAI", "API", "Rust", "library", "SDK", "AI"]
+categories = ["api-bindings", "web-programming"]
 
 [dependencies]
+
+[lib]
+name = "open_ai_rust"
+path = "src/lib.rs"
