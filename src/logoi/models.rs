@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use serde::{Deserialize, Serialize};
+
 ///Continuous model upgrades
 ///gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-4, and gpt-3.5-turbo point to their respective latest model version. You can verify this by looking at the response object after sending a request. The response will include the specific model version used (e.g. gpt-3.5-turbo-1106).
 ///
@@ -93,6 +95,7 @@ use std::fmt::Display;
 ///Model	Description	Max tokens	Training data
 ///babbage-002	Replacement for the GPT-3 ada and babbage base models.	16,384 tokens	Up to Sep 2021
 ///davinci-002	Replacement for the GPT-3 curie and davinci base models.	16,384 tokens	Up to Sep 2021
+#[derive(Deserialize, Debug, Clone)]
 pub enum OpenAiModel {
     GPT4o,
     GPT4oMini,
@@ -138,5 +141,14 @@ impl Display for OpenAiModel {
             OpenAiModel::Davinci002 => write!(f, "davinci-002"),
             OpenAiModel::Custom(s) => write!(f, "{}", s),
         }
+    }
+}
+
+impl Serialize for OpenAiModel {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }
