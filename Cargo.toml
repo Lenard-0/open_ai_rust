@@ -8,7 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/Lenard-0/open_ai_rust"
 homepage = "https://github.com/Lenard-0/open_ai_rust"
 documentation = "https://docs.rs/open_ai_rust"
-keywords = ["OpenAI", "API", "Rust", "library", "SDK", "AI"]
+keywords = ["OpenAI", "API", "Rust", "library", "SDK"]
 categories = ["api-bindings", "web-programming"]
 
 [dependencies]
