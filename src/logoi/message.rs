@@ -23,3 +23,15 @@ pub enum ChatMessageRole {
     Assistant,
     Function,
 }
+
+impl From<String> for ChatMessageRole {
+    fn from(role: String) -> Self {
+        match role.as_str() {
+            "system" => ChatMessageRole::System,
+            "user" => ChatMessageRole::User,
+            "assistant" => ChatMessageRole::Assistant,
+            "function" => ChatMessageRole::Function,
+            _ => ChatMessageRole::User,
+        }
+    }
+}

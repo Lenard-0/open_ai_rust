@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::{input::tool::FunctionCall, message::ChatMessage};
 
@@ -46,6 +47,26 @@ pub struct AiMsgResponse {
     pub system_fingerprint: String,
 }
 
+impl AiMsgResponse {
+    pub fn get_messages(&self) -> Vec<ChatMessage> {
+        self.choices.iter().map(|choice| {
+            ChatMessage {
+                content: choice.message.content.clone().unwrap_or("".to_string()),
+                role: choice.message.role.clone().into(),
+                name: None
+            }
+        }).collect()
+    }
+
+    pub fn get_tool_calls(&self) -> Vec<FunctionCallRes> {
+        self.choices.iter().map(|choice| {
+            choice.message.tool_calls.iter().map(|tool_call| {
+                tool_call.function.clone()
+            }).collect::<Vec<FunctionCallRes>>()
+        }).flatten().collect()
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Choice {
     pub finish_reason: String,
@@ -70,5 +91,20 @@ pub struct AiResponseMessage {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ToolCall {
-    pub function: FunctionCall,
+    pub function: FunctionCallRes,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct FunctionCallRes {
+    pub name: String,
+    #[serde(deserialize_with = "deserialize_json_string")]
+    pub arguments: Value,
+}
+
+fn deserialize_json_string<'de, D>(deserializer: D) -> Result<Value, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    serde_json::from_str(&s).map_err(serde::de::Error::custom)
 }
