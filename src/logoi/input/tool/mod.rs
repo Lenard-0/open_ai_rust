@@ -34,14 +34,13 @@ pub struct FunctionParameter {
     pub description: Option<String>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
-#[serde(rename_all = "lowercase")]
+#[derive(Deserialize, Debug, Clone)]
 pub enum FunctionType {
     String,
     Number,
     Boolean,
     Array,
-    Object { required: Vec<String> },
+    Object(Vec<FunctionParameter>),
     Null,
     Enum(Vec<Value>), // MUST ALL BE SAME TYPE
     Option(Box<FunctionType>),
