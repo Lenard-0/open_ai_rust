@@ -1,3 +1,6 @@
+use core::fmt;
+use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
 
 
@@ -33,5 +36,11 @@ impl From<String> for ChatMessageRole {
             "function" => ChatMessageRole::Function,
             _ => ChatMessageRole::User,
         }
+    }
+}
+
+impl Display for ChatMessageRole {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

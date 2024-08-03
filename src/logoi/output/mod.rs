@@ -86,11 +86,11 @@ pub struct Usage {
 pub struct AiResponseMessage {
     pub content: Option<String>,
     pub role: String,
-    pub tool_calls: Vec<ToolCall>,
+    pub tool_calls: Vec<ToolCallRes>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ToolCall {
+pub struct ToolCallRes {
     pub function: FunctionCallRes,
 }
 
@@ -108,3 +108,4 @@ where
     let s: String = Deserialize::deserialize(deserializer)?;
     serde_json::from_str(&s).map_err(serde::de::Error::custom)
 }
+

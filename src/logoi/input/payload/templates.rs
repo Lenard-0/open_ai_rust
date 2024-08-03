@@ -1,4 +1,4 @@
-use crate::logoi::{input::tool::FunctionCall, message::ChatMessage, models::OpenAiModel};
+use crate::logoi::{input::tool::{FunctionCall, ToolChoice, ToolType}, message::ChatMessage, models::OpenAiModel};
 
 use super::ChatPayLoad;
 
@@ -21,7 +21,7 @@ impl PayLoadTemplates {
             Self::FunctionCall(template) => ChatPayLoad {
                 model: template.model,
                 messages: template.messages,
-                tools: Some(template.tools),
+                tools: template.tools,
                 tool_choice: Some("auto".to_string()),
                 frequency_penalty: None,
                 logprobs: None,
@@ -98,16 +98,20 @@ impl QuickChatTemplate {
 pub struct QuickFunctionCallTemplate {
     pub model: OpenAiModel,
     pub messages: Vec<ChatMessage>,
-    pub tools: Vec<FunctionCall>,
+    pub tools: Option<Vec<ToolChoice>>,
     pub tool_choice: Option<FunctionCall>,
 }
 
 impl QuickFunctionCallTemplate {
-    pub fn default(messages: Vec<ChatMessage>, tools: Vec<FunctionCall>, tool_choice: Option<FunctionCall>) -> Self {
+    pub fn default(messages: Vec<ChatMessage>, functions: Vec<FunctionCall>, tool_choice: Option<FunctionCall>) -> Self {
+        let mut tools: Vec<ToolChoice> = vec![];
+        for f in functions {
+            tools.push(ToolChoice { function: f, _type: ToolType::Function });
+        }
         Self {
             model: OpenAiModel::GPT4o,
             messages,
-            tools,
+            tools: Some(tools),
             tool_choice
         }
     }

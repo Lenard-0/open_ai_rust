@@ -2,9 +2,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::logoi::{message::ChatMessage, models::OpenAiModel};
 
-use super::tool::FunctionCall;
+use super::tool::{FunctionCall, ToolChoice};
 
 pub mod templates;
+pub mod builder;
 
 // Chat
 // Given a list of messages comprising a conversation, the model will return a response.
@@ -223,7 +224,7 @@ pub struct ChatPayLoad {
     pub model: OpenAiModel,
     pub messages: Vec<ChatMessage>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tools: Option<Vec<FunctionCall>>,
+    pub tools: Option<Vec<ToolChoice>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tool_choice: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
