@@ -261,4 +261,283 @@ mod tests {
             },
         }));
     }
+
+    #[test]
+    fn can_correctly_parse_function_definition_with_multiple_parameters() {
+        let function_def = FunctionCall {
+            name: "create_event".to_string(),
+            description: Some("Creates a new event.".to_string()),
+            parameters: vec![
+                FunctionParameter {
+                    name: "title".to_string(),
+                    _type: FunctionType::String,
+                    description: Some("The title of the event.".to_string()),
+                },
+                FunctionParameter {
+                    name: "date".to_string(),
+                    _type: FunctionType::String, // Assuming date is in string format (ISO 8601)
+                    description: Some("The date of the event.".to_string()),
+                },
+                FunctionParameter {
+                    name: "location".to_string(),
+                    _type: FunctionType::String,
+                    description: Some("The location of the event.".to_string()),
+                }
+            ]
+        };
+
+        let function_def_json = serde_json::to_value(&function_def).unwrap();
+        assert_eq!(function_def_json, json!({
+            "description": "Creates a new event.",
+            "name": "create_event",
+            "parameters": {
+                "properties": {
+                    "title": {
+                        "description": "The title of the event.",
+                        "type": "string",
+                    },
+                    "date": {
+                        "description": "The date of the event.",
+                        "type": "string",
+                    },
+                    "location": {
+                        "description": "The location of the event.",
+                        "type": "string",
+                    }
+                },
+                "required": [
+                    "title",
+                    "date",
+                    "location",
+                ],
+                "type": "object",
+            },
+        }));
+    }
+
+    #[test]
+    fn can_correctly_parse_function_definition_with_nested_objects() {
+        let function_def = FunctionCall {
+            name: "update_user".to_string(),
+            description: Some("Updates user details.".to_string()),
+            parameters: vec![
+                FunctionParameter {
+                    name: "user".to_string(),
+                    _type: FunctionType::Object(vec![
+                        FunctionParameter {
+                            name: "username".to_string(),
+                            _type: FunctionType::String,
+                            description: Some("The username.".to_string()),
+                        },
+                        FunctionParameter {
+                            name: "profile".to_string(),
+                            _type: FunctionType::Object(vec![
+                                FunctionParameter {
+                                    name: "age".to_string(),
+                                    _type: FunctionType::Number,
+                                    description: Some("The age of the user.".to_string()),
+                                },
+                                FunctionParameter {
+                                    name: "email".to_string(),
+                                    _type: FunctionType::String,
+                                    description: Some("The email address.".to_string()),
+                                }
+                            ]),
+                            description: Some("Profile details.".to_string()),
+                        }
+                    ]),
+                    description: Some("The user object to update.".to_string()),
+                }
+            ]
+        };
+
+        let function_def_json = serde_json::to_value(&function_def).unwrap();
+        assert_eq!(function_def_json, json!({
+            "description": "Updates user details.",
+            "name": "update_user",
+            "parameters": {
+                "properties": {
+                    "user": {
+                        "description": "The user object to update.",
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "description": "The username.",
+                                "type": "string",
+                            },
+                            "profile": {
+                                "description": "Profile details.",
+                                "type": "object",
+                                "properties": {
+                                    "age": {
+                                        "description": "The age of the user.",
+                                        "type": "number",
+                                    },
+                                    "email": {
+                                        "description": "The email address.",
+                                        "type": "string",
+                                    }
+                                },
+                                "required": [
+                                    "age",
+                                    "email",
+                                ]
+                            }
+                        },
+                        "required": [
+                            "username",
+                            "profile",
+                        ],
+                    },
+                },
+                "required": [
+                    "user",
+                ],
+                "type": "object",
+            },
+        }));
+    }
+
+    #[test]
+    fn can_correctly_parse_function_definition_with_nested_arrays() {
+        let function_def = FunctionCall {
+            name: "process_data".to_string(),
+            description: Some("Processes nested data arrays.".to_string()),
+            parameters: vec![
+                FunctionParameter {
+                    name: "data".to_string(),
+                    _type: FunctionType::Array,
+                    description: Some("A list of data entries.".to_string()),
+                }
+            ]
+        };
+
+        let function_def_json = serde_json::to_value(&function_def).unwrap();
+        assert_eq!(function_def_json, json!({
+            "description": "Processes nested data arrays.",
+            "name": "process_data",
+            "parameters": {
+                "properties": {
+                    "data": {
+                        "description": "A list of data entries.",
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                            }
+                        }
+                    },
+                },
+                "required": [
+                    "data",
+                ],
+                "type": "object",
+            },
+        }));
+    }
+
+    #[test]
+    fn can_correctly_parse_function_definition_with_nested_arrays_and_objects() {
+        let function_def = FunctionCall {
+            name: "upload_files".to_string(),
+            description: Some("Uploads files with metadata.".to_string()),
+            parameters: vec![
+                FunctionParameter {
+                    name: "files".to_string(),
+                    _type: FunctionType::Array,
+                    description: Some("List of files with metadata.".to_string()),
+                }
+            ]
+        };
+
+        let function_def_json = serde_json::to_value(&function_def).unwrap();
+        assert_eq!(function_def_json, json!({
+            "description": "Uploads files with metadata.",
+            "name": "upload_files",
+            "parameters": {
+                "properties": {
+                    "files": {
+                        "description": "List of files with metadata.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "filename": {
+                                    "type": "string",
+                                },
+                                "size": {
+                                    "type": "number",
+                                }
+                            },
+                            "required": [
+                                "filename",
+                                "size",
+                            ]
+                        }
+                    },
+                },
+                "required": [
+                    "files",
+                ],
+                "type": "object",
+            },
+        }));
+    }
+
+    #[test]
+    fn can_correctly_parse_function_definition_with_option_and_nested_structure() {
+        let function_def = FunctionCall {
+            name: "configure_settings".to_string(),
+            description: Some("Configures settings with optional details.".to_string()),
+            parameters: vec![
+                FunctionParameter {
+                    name: "settings".to_string(),
+                    _type: FunctionType::Option(Box::new(FunctionType::Object(vec![
+                        FunctionParameter {
+                            name: "theme".to_string(),
+                            _type: FunctionType::String,
+                            description: Some("The theme setting.".to_string()),
+                        },
+                        FunctionParameter {
+                            name: "notifications".to_string(),
+                            _type: FunctionType::Boolean,
+                            description: Some("Whether notifications are enabled.".to_string()),
+                        }
+                    ]))),
+                    description: Some("Optional settings object.".to_string()),
+                }
+            ]
+        };
+
+        let function_def_json = serde_json::to_value(&function_def).unwrap();
+        assert_eq!(function_def_json, json!({
+            "description": "Configures settings with optional details.",
+            "name": "configure_settings",
+            "parameters": {
+                "properties": {
+                    "settings": {
+                        "description": "Optional settings object.",
+                        "type": "object",
+                        "properties": {
+                            "theme": {
+                                "description": "The theme setting.",
+                                "type": "string",
+                            },
+                            "notifications": {
+                                "description": "Whether notifications are enabled.",
+                                "type": "boolean",
+                            }
+                        },
+                        "required": [
+                            "theme",
+                            "notifications",
+                        ]
+                    }
+                },
+                "required": [],
+                "type": "object",
+            },
+        }));
+    }
 }
