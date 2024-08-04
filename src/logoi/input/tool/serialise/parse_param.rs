@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use serde_json::Map;
+
 use crate::logoi::input::tool::{FunctionParameter, FunctionType};
 use super::parse_type::insert_type;
 
 pub fn insert_param(
-    params_map: &mut HashMap<String, serde_json::Value>,
+    params_map: &mut Map<String, serde_json::Value>,
     required_params: &mut Vec<String>,
     param: &FunctionParameter
 ) -> Result<(), String> {
