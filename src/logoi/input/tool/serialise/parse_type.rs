@@ -1,5 +1,7 @@
 use crate::logoi::input::tool::FunctionType;
 
+use super::parse_obj::parse_obj;
+
 pub fn insert_type(
     param_map: &mut serde_json::Map<String, serde_json::Value>,
     _type: &FunctionType
@@ -7,6 +9,12 @@ pub fn insert_type(
     match _type {
         FunctionType::Option(_type) => return insert_type(param_map, _type.as_ref()),
         FunctionType::Enum(values) => insert_enum_type(param_map, values)?,
+        FunctionType::Object(obj) => {
+            let obj = parse_obj(obj)?;
+            for (key, value) in obj {
+                param_map.insert(key, value);
+            }
+        },
         _type => { param_map.insert("type".to_string(), serde_json::Value::String(_type.to_string())); }
     };
     Ok(())

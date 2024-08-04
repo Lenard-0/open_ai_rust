@@ -1,5 +1,4 @@
 use serde_json::Map;
-
 use crate::logoi::input::tool::{FunctionParameter, FunctionType};
 use super::parse_type::insert_type;
 

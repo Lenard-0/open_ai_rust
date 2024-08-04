@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use serde_json::Value;
 use crate::logoi::input::tool::FunctionParameter;
 use super::parse_param::insert_param;
@@ -6,14 +5,14 @@ use super::parse_param::insert_param;
 
 
 pub fn parse_obj(
-    fields: &Vec<FunctionParameter>
+    obj: &Vec<FunctionParameter>
 ) -> Result<serde_json::Map<String, Value>, String> {
-    let (fields_map, required_params) = match parse_fields(fields) {
+    let (fields_map, required_params) = match parse_fields(obj) {
         Ok((fields_map, required_params)) => (fields_map, required_params),
         Err(e) => return Err(e)
     };
 
-    let mut obj = serde_json::Map::new();
+    let mut obj: serde_json::Map<String, Value> = serde_json::Map::new();
     obj.insert("type".to_string(), serde_json::Value::String("object".to_string()));
     obj.insert("properties".to_string(), serde_json::Value::Object(fields_map));
 
