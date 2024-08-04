@@ -1,6 +1,5 @@
 use crate::logoi::input::tool::FunctionType;
 
-
 pub fn insert_type(
     param_map: &mut serde_json::Map<String, serde_json::Value>,
     _type: &FunctionType

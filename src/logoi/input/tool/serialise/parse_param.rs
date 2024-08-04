@@ -1,9 +1,6 @@
 use std::collections::HashMap;
-
 use crate::logoi::input::tool::{FunctionParameter, FunctionType};
-
-use super::insert_type::insert_type;
-
+use super::parse_type::insert_type;
 
 pub fn insert_param(
     params_map: &mut HashMap<String, serde_json::Value>,
@@ -16,9 +13,7 @@ pub fn insert_param(
     };
 
     let mut param_map = serde_json::Map::new();
-
     insert_type(&mut param_map, &param._type)?;
-
     if let Some(ref description) = param.description {
         param_map.insert("description".to_string(), serde_json::Value::String(description.clone()));
     }
