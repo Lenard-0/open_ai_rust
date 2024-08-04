@@ -1,3 +1,5 @@
+use serde_json::json;
+
 use crate::logoi::input::tool::FunctionType;
 
 use super::parse_obj::parse_obj;
@@ -14,6 +16,14 @@ pub fn insert_type(
             for (key, value) in obj {
                 param_map.insert(key, value);
             }
+        },
+        FunctionType::Array(items) => {
+            param_map.insert("type".to_string(), json!("array".to_string()));
+            param_map.insert("items".to_string(), serde_json::Value::Object({
+                let mut items_map = serde_json::Map::new();
+                insert_type(&mut items_map, items)?;
+                items_map
+            }));
         },
         _type => { param_map.insert("type".to_string(), serde_json::Value::String(_type.to_string())); }
     };

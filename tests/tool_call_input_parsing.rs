@@ -145,7 +145,7 @@ mod tests {
             parameters: vec![
                 FunctionParameter {
                     name: "tags".to_string(),
-                    _type: FunctionType::Array,
+                    _type: FunctionType::Array(Box::new(FunctionType::String)),
                     description: Some("The tags to set.".to_string()),
                 }
             ]
@@ -199,7 +199,6 @@ mod tests {
         };
 
         let function_def_json = serde_json::to_value(&function_def).unwrap();
-        println!("function_def_json: {:#?}", function_def_json);
         assert_eq!(function_def_json, json!({
             "description": "Updates the user profile.",
             "name": "update_profile",
@@ -407,7 +406,7 @@ mod tests {
             parameters: vec![
                 FunctionParameter {
                     name: "data".to_string(),
-                    _type: FunctionType::Array,
+                    _type: FunctionType::Array(Box::new(FunctionType::Array(Box::new(FunctionType::String)))),
                     description: Some("A list of data entries.".to_string()),
                 }
             ]
@@ -446,7 +445,18 @@ mod tests {
             parameters: vec![
                 FunctionParameter {
                     name: "files".to_string(),
-                    _type: FunctionType::Array,
+                    _type: FunctionType::Array(Box::new(FunctionType::Object(vec![
+                        FunctionParameter {
+                            name: "filename".to_string(),
+                            _type: FunctionType::String,
+                            description: Some("The filename.".to_string()),
+                        },
+                        FunctionParameter {
+                            name: "size".to_string(),
+                            _type: FunctionType::Number,
+                            description: Some("The size of the file.".to_string()),
+                        }
+                    ]))),
                     description: Some("List of files with metadata.".to_string()),
                 }
             ]

@@ -39,7 +39,7 @@ pub enum FunctionType {
     String,
     Number,
     Boolean,
-    Array,
+    Array(Box<FunctionType>),
     Object(Vec<FunctionParameter>),
     Null,
     Enum(Vec<Value>), // MUST ALL BE SAME TYPE
@@ -52,7 +52,7 @@ impl Display for FunctionType {
             FunctionType::String => write!(f, "string"),
             FunctionType::Number => write!(f, "number"),
             FunctionType::Boolean => write!(f, "boolean"),
-            FunctionType::Array => write!(f, "array"),
+            FunctionType::Array(_type) => write!(f, "array<{}>", _type),
             FunctionType::Object { .. } => write!(f, "object"),
             FunctionType::Null => write!(f, "null"),
             FunctionType::Enum(values) => {

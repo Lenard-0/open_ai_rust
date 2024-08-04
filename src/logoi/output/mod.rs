@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::{input::tool::FunctionCall, message::ChatMessage};
+use super::message::ChatMessage;
 
 
     //     "choices": Array [
