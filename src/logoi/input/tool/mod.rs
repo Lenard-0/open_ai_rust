@@ -14,7 +14,7 @@ pub struct ToolChoice {
     pub _type: ToolType,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct FunctionCall {
     pub name: String,
     pub description: Option<String>,
@@ -27,14 +27,14 @@ pub enum ToolType {
     Function
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct FunctionParameter {
     pub name: String,
     pub _type: FunctionType,
     pub description: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub enum FunctionType {
     String,
     Number,
