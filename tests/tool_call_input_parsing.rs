@@ -246,6 +246,7 @@ mod tests {
         };
 
         let function_def_json = serde_json::to_value(&function_def).unwrap();
+        println!("{:#?}", function_def_json);
         assert_eq!(function_def_json, json!({
             "description": "Sets an optional value.",
             "name": "set_optional",

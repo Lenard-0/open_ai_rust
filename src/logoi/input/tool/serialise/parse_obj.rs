@@ -2,7 +2,16 @@ use serde_json::Value;
 use crate::logoi::input::tool::FunctionParameter;
 use super::parse_param::insert_param;
 
-
+pub fn insert_obj_into_param_map(
+    param_map: &mut serde_json::Map<String, serde_json::Value>,
+    obj: &Vec<FunctionParameter>
+) -> Result<(), String> {
+    let obj = parse_obj(obj)?;
+    for (key, value) in obj {
+        param_map.insert(key, value);
+    }
+    Ok(())
+}
 
 pub fn parse_obj(
     obj: &Vec<FunctionParameter>
@@ -16,9 +25,9 @@ pub fn parse_obj(
     obj.insert("type".to_string(), serde_json::Value::String("object".to_string()));
     obj.insert("properties".to_string(), serde_json::Value::Object(fields_map));
 
-    if !required_params.is_empty() {
+    // if !required_params.is_empty() {
         obj.insert("required".to_string(), serde_json::Value::Array(required_params.into_iter().map(serde_json::Value::String).collect()));
-    }
+    // }
 
     return Ok(obj)
 }

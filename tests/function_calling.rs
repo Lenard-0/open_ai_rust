@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn can_do_weather_function_calls() {
+    async fn can_do_weather_function_call_including_enums_and_strings_multiple_calls_and_params() {
         dotenv::dotenv().ok();
         set_key(std::env::var("OPENAI_SK").unwrap()); // Set the OpenAI API key from the environment variable
 
@@ -127,7 +127,6 @@ mod tests {
         assert_eq!(arguments_2.get("location").unwrap().as_str().unwrap(), "San Francisco, CA");
         assert_eq!(arguments_2.get("unit").unwrap().as_str().unwrap(), "Fahrenheight");
     }
-
 }
 
 

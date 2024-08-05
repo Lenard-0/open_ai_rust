@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::logoi::input::tool::FunctionType;
 
-use super::parse_obj::parse_obj;
+use super::parse_obj::insert_obj_into_param_map;
 
 pub fn insert_type(
     param_map: &mut serde_json::Map<String, serde_json::Value>,
@@ -11,22 +11,11 @@ pub fn insert_type(
     match _type {
         FunctionType::Option(_type) => return insert_type(param_map, _type.as_ref()),
         FunctionType::Enum(values) => insert_enum_type(param_map, values)?,
-        FunctionType::Object(obj) => {
-            let obj = parse_obj(obj)?;
-            for (key, value) in obj {
-                param_map.insert(key, value);
-            }
-        },
-        FunctionType::Array(items) => {
-            param_map.insert("type".to_string(), json!("array".to_string()));
-            param_map.insert("items".to_string(), serde_json::Value::Object({
-                let mut items_map = serde_json::Map::new();
-                insert_type(&mut items_map, items)?;
-                items_map
-            }));
-        },
+        FunctionType::Object(obj) => insert_obj_into_param_map(param_map, obj)?,
+        FunctionType::Array(items) => parse_array(param_map, items)?,
         _type => { param_map.insert("type".to_string(), serde_json::Value::String(_type.to_string())); }
     };
+
     Ok(())
 }
 
@@ -65,5 +54,15 @@ fn make_sure_all_values_same_type(values: &Vec<serde_json::Value>) -> Result<(),
             return Err("All values in Enum must be of the same type".to_string())
         }
     }
+    Ok(())
+}
+
+fn parse_array(param_map: &mut serde_json::Map<String, serde_json::Value>, items: &FunctionType) -> Result<(), String> {
+    param_map.insert("type".to_string(), json!("array".to_string()));
+    param_map.insert("items".to_string(), serde_json::Value::Object({
+        let mut items_map = serde_json::Map::new();
+        insert_type(&mut items_map, items)?;
+        items_map
+    }));
     Ok(())
 }
