@@ -4,7 +4,7 @@
 // IF A TEST USING THE FUNCTION CALL DOES FAIL TRY RUNNING IT AGAIN BEFORE DEBUGGING
 #[cfg(test)]
 mod tests {
-    use open_ai_rust::{logoi::{input::{payload::builder::PayLoadBuilder, tool::{FunctionCall, FunctionParameter, FunctionType}}, message::{ChatMessage, ChatMessageRole}, models::OpenAiModel}, requests::open_ai_msg, set_key};
+    use open_ai_rust::{logoi::{input::{payload::builder::PayLoadBuilder, tool::{EnumValues, FunctionCall, FunctionParameter, FunctionType}}, message::{ChatMessage, ChatMessageRole}, models::OpenAiModel}, requests::open_ai_msg, set_key};
     use serde_json::Value;
 
     #[tokio::test]
@@ -82,10 +82,7 @@ mod tests {
                     },
                     FunctionParameter {
                         name: "unit".to_string(),
-                        _type: FunctionType::Enum(vec![
-                            Value::String("Fahrenheight".to_string()),
-                            Value::String("Celcius".to_string())
-                        ]),
+                        _type: FunctionType::Enum(EnumValues::String(vec!["Fahrenheight".to_string(), "Celcius".to_string()])),
                         description: Some("The temperature unit to use. Infer this from the user's location.".to_string()),
                     }
                 ],

@@ -1,7 +1,7 @@
 
 #[cfg(test)]
 mod tests {
-    use open_ai_rust::logoi::input::tool::{FunctionCall, FunctionParameter, FunctionType};
+    use open_ai_rust::logoi::input::tool::{EnumValues, FunctionCall, FunctionParameter, FunctionType};
     use serde_json::json;
 
     #[test]
@@ -111,7 +111,7 @@ mod tests {
             parameters: vec![
                 FunctionParameter {
                     name: "unit".to_string(),
-                    _type: FunctionType::Enum(json!(["Fahrenheight", "Celcius"]).as_array().unwrap().to_vec()),
+                    _type: FunctionType::Enum(EnumValues::String(vec!["Fahrenheight".to_string(), "Celcius".to_string()])),
                     description: Some("The temperature unit to use.".to_string()),
                 }
             ]

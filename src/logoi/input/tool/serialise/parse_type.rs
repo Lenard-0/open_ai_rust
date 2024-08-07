@@ -1,6 +1,6 @@
 use serde_json::json;
 
-use crate::logoi::input::tool::FunctionType;
+use crate::logoi::input::tool::{EnumValues, FunctionType};
 
 use super::parse_obj::insert_obj_into_param_map;
 
@@ -21,40 +21,24 @@ pub fn insert_type(
 
 fn insert_enum_type(
     param_map: &mut serde_json::Map<String, serde_json::Value>,
-    values: &Vec<serde_json::Value>
+    values: &EnumValues
 ) -> Result<(), String> {
-    make_sure_all_values_same_type(values)?;
-    let _type = match values.first() {
-        Some(value) => json_type_to_string(value)?,
-        None => return Err("Enum values must not be empty".to_string())
-    };
-    param_map.insert("type".to_string(), serde_json::Value::String(_type.to_string()));
-    param_map.insert("enum".to_string(), serde_json::Value::Array(values.clone()));
+    param_map.insert("type".to_string(), serde_json::Value::String(enum_value_to_string(values)?));
+    param_map.insert("enum".to_string(), serde_json::Value::Array(match values {
+        EnumValues::String(values) => values.iter().map(|v| serde_json::Value::String(v.to_string())).collect(),
+        EnumValues::Int(values) => values.iter().map(|v| serde_json::Value::Number(serde_json::Number::from(*v))).collect(),
+        EnumValues::Float(values) => values.iter().map(|v| serde_json::Value::Number(serde_json::Number::from_f64(*v).unwrap())).collect(),
+    }));
+
     Ok(())
 }
 
-fn json_type_to_string(_type: &serde_json::Value) -> Result<String, String> {
+fn enum_value_to_string(_type: &EnumValues) -> Result<String, String> {
     match _type {
-        serde_json::Value::String(_) => Ok("string".to_string()),
-        serde_json::Value::Number(_) => Ok("number".to_string()),
-        serde_json::Value::Bool(_) => Ok("boolean".to_string()),
-        _ => Err("Invalid type".to_string())
+        EnumValues::String(_) => Ok("string".to_string()),
+        EnumValues::Int(_) => Ok("number".to_string()),
+        EnumValues::Float(_) => Ok("number".to_string()),
     }
-}
-
-fn make_sure_all_values_same_type(values: &Vec<serde_json::Value>) -> Result<(), String> {
-    let first_type = match values.first() {
-        Some(value) => json_type_to_string(value)?,
-        None => return Err("Enum values must not be empty".to_string())
-    };
-
-    for value in values {
-        let value_type = json_type_to_string(value)?;
-        if value_type != first_type {
-            return Err("All values in Enum must be of the same type".to_string())
-        }
-    }
-    Ok(())
 }
 
 fn parse_array(param_map: &mut serde_json::Map<String, serde_json::Value>, items: &FunctionType) -> Result<(), String> {
@@ -64,5 +48,6 @@ fn parse_array(param_map: &mut serde_json::Map<String, serde_json::Value>, items
         insert_type(&mut items_map, items)?;
         items_map
     }));
+
     Ok(())
 }
