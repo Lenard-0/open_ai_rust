@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use super::message::ChatMessage;
 
@@ -58,12 +58,29 @@ impl AiMsgResponse {
         }).collect()
     }
 
+    pub fn get_last_msg_text(&self) -> Option<String> {
+        match self.choices.last() {
+            Some(msg) => msg.message.content.clone(),
+            None => None
+        }
+    }
+
     pub fn get_tool_calls(&self) -> Vec<FunctionCallRes> {
         self.choices.iter().map(|choice| {
             choice.message.tool_calls.iter().map(|tool_call| {
                 tool_call.function.clone()
             }).collect::<Vec<FunctionCallRes>>()
         }).flatten().collect()
+    }
+
+    pub fn get_tool_call_args(&self) -> Result<Value, String> {
+        match self.choices.first() {
+            Some(choice) => match choice.message.tool_calls.first() {
+                Some(tool_call) => Ok(tool_call.get_args()),
+                None => return Err("No tool calls in first choice of in get tool call json".to_string())
+            },
+            None => return Err("No choices in get tool call json".to_string())
+        }
     }
 }
 
@@ -92,6 +109,12 @@ pub struct AiResponseMessage {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ToolCallRes {
     pub function: FunctionCallRes,
+}
+
+impl ToolCallRes {
+    pub fn get_args(&self) -> Value {
+        return json!(self.function.arguments)
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

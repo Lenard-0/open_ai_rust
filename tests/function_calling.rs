@@ -114,6 +114,7 @@ mod tests {
         // Check the first tool call
         let tool_call_1 = &tool_calls[0];
         assert_eq!(tool_call_1.name, "get_rain_probability");
+        println!("arguments: {:#?}", tool_call_1.arguments);
         let arguments_1 = tool_call_1.arguments.as_object().unwrap();
         assert_eq!(arguments_1.get("location").unwrap().as_str().unwrap(), "San Francisco, CA");
 
