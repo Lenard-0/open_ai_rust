@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use super::{FunctionCall, FunctionType};
 
 
-pub mod struct_macro;
 pub mod fn_macro;
 
 pub trait FunctionCallable {
