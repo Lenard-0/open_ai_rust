@@ -2,12 +2,12 @@
 
 #[cfg(test)]
 mod tests {
-    use open_ai_rust::logoi::input::tool::{raw_macro::FunctionCallRaw, FunctionCall, FunctionParameter, FunctionType};
+    use open_ai_rust::logoi::input::tool::{raw_macro::fn_macro::FunctionCallRaw, FunctionCall, FunctionParameter, FunctionType};
     use open_ai_rust_fn_call_extension::function_call;
 
 
     #[function_call("This function turns on or off the light in their room")]
-    fn change_light(turn_on_light: bool, hex_color: String, brightness: i64, pulse_rate: f64) {
+    fn change_light(turn_on_light: bool, _hex_color: String, _brightness: i64, _pulse_rate: f64) {
         if turn_on_light {
             // light on
         } else {
@@ -41,17 +41,17 @@ mod tests {
                     description: None,
                 },
                 FunctionParameter {
-                    name: "hex_color".to_string(),
+                    name: "_hex_color".to_string(),
                     _type: FunctionType::String,
                     description: None,
                 },
                 FunctionParameter {
-                    name: "brightness".to_string(),
+                    name: "_brightness".to_string(),
                     _type: FunctionType::Number,
                     description: None,
                 },
                 FunctionParameter {
-                    name: "pulse_rate".to_string(),
+                    name: "_pulse_rate".to_string(),
                     _type: FunctionType::Number,
                     description: None,
                 },
