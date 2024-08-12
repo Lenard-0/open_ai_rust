@@ -64,7 +64,9 @@ fn map_type(param_type_str: &str) -> Result<FunctionType, String> {
     }
 
     match param_type_str {
-        "u32" | "u64" | "i32" | "i64" => Ok(FunctionType::Number),
+        "u8" | "u16" | "u32" | "u64" | "u128"
+        | "i8" | "i16" | "i32" | "i64" | "i128"
+        | "f32" | "f64" => Ok(FunctionType::Number),
         "String" => Ok(FunctionType::String),
         "bool" => Ok(FunctionType::Boolean),
         _ => Err(format!("Unsupported parameter type: {}", param_type_str)),

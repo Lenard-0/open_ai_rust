@@ -47,7 +47,9 @@ mod tests {
     pub fn can_parse_struct_with_vec_of_primitive() {
         #[derive(FunctionCallType)]
         struct MakeNotes {
-            notes: Vec<String>
+            heading: String,
+            notes: Vec<String>,
+            difficulty: u8
         }
 
         let expected_fn_call = FunctionCall {
@@ -55,8 +57,18 @@ mod tests {
             description: None,
             parameters: vec![
                 FunctionParameter {
+                    name: "heading".to_string(),
+                    _type: FunctionType::String,
+                    description: None
+                },
+                FunctionParameter {
                     name: "notes".to_string(),
                     _type: FunctionType::Array(Box::new(FunctionType::String)),
+                    description: None
+                },
+                FunctionParameter {
+                    name: "difficulty".to_string(),
+                    _type: FunctionType::Number,
                     description: None
                 },
             ]
