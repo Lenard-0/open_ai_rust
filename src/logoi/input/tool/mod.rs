@@ -21,6 +21,10 @@ pub struct FunctionCall {
     pub parameters: Vec<FunctionParameter>,
 }
 
+impl FunctionCall {
+    pub fn new() -> Self { FunctionCall { name: "".to_string(), description: None, parameters: vec![] } }
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum ToolType {
