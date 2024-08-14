@@ -8,16 +8,19 @@ pub mod fn_macro;
 pub trait FunctionCallable {
     fn to_fn_call(&self) -> FunctionCall;
     fn to_fn_type(&self) -> FunctionType;
+    // fn for_fn_call() -> Self;
 }
 
 impl FunctionCallable for String {
     fn to_fn_call(&self) -> FunctionCall { FunctionCall::new() }
     fn to_fn_type(&self) -> FunctionType { FunctionType::String }
+    // fn for_fn_call() -> Self { return String::new() }
 }
 
 impl FunctionCallable for bool {
     fn to_fn_call(&self) -> FunctionCall { FunctionCall::new() }
     fn to_fn_type(&self) -> FunctionType { FunctionType::Boolean }
+    // fn for_fn_call() -> Self { Default::default() }
 }
 
 macro_rules! implement_int {
@@ -26,6 +29,7 @@ macro_rules! implement_int {
             impl FunctionCallable for $int {
                 fn to_fn_call(&self) -> FunctionCall { FunctionCall::new() }
                 fn to_fn_type(&self) -> FunctionType { FunctionType::Number }
+                // fn for_fn_call() -> Self { Default::default() }
             }
         )+
     };
@@ -42,6 +46,7 @@ impl<T: FunctionCallable> FunctionCallable for Vec<T> {
         let first_val = &self[0];
         return FunctionType::Array(Box::new(first_val.to_fn_type()))
     }
+    // fn for_fn_call() -> Self { Default::default() }
 }
 
 impl<T: FunctionCallable> FunctionCallable for Option<T> {
@@ -50,6 +55,7 @@ impl<T: FunctionCallable> FunctionCallable for Option<T> {
         Some(v) => FunctionType::Option(Box::new(v.to_fn_type())),
         None => panic!("Empty option when trying to fn call parse. Need val for type")
     }}
+    // fn for_fn_call() -> Self { Default::default() }
 }
 
 // impl<K: FunctionCallable, V: FunctionCallable> FunctionCallable for HashMap<K, V> {

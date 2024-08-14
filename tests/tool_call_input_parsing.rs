@@ -450,12 +450,12 @@ mod tests {
                         FunctionParameter {
                             name: "filename".to_string(),
                             _type: FunctionType::String,
-                            description: Some("The filename.".to_string()),
+                            description: None
                         },
                         FunctionParameter {
                             name: "size".to_string(),
                             _type: FunctionType::Number,
-                            description: Some("The size of the file.".to_string()),
+                            description: None
                         }
                     ]))),
                     description: Some("List of files with metadata.".to_string()),
