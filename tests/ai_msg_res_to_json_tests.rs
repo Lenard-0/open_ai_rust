@@ -15,12 +15,12 @@ mod tests {
                 message: AiResponseMessage {
                     content: None,
                     role: "".to_string(),
-                    tool_calls: vec![ToolCallRes { function: FunctionCallRes {
+                    tool_calls: Some(vec![ToolCallRes { function: FunctionCallRes {
                         name: "fn_name".to_string(),
                         arguments: json!({
                             "location": "San Francisco, CA",
                         })
-                    }}]
+                    }}])
                 },
                 logprobs: None
             }],
@@ -36,7 +36,7 @@ mod tests {
         struct Location {
             location: String
         }
-        let fn_call_args: serde_json::Value = msg_res.get_tool_call_args().unwrap();
+        let fn_call_args: serde_json::Value = msg_res.get_first_tool_call_args().unwrap();
         let location: Location = serde_json::from_value(fn_call_args).unwrap();
         assert_eq!(location, Location { location: "San Francisco, CA".to_string() })
     }

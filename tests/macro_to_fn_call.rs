@@ -7,7 +7,7 @@ mod tests {
 
 
     #[function_call("This function turns on or off the light in their room")]
-    fn change_light(turn_on_light: bool, _hex_color: String, _brightness: i64, _pulse_rate: f64) {
+    fn _change_light(turn_on_light: bool, _hex_color: String, _brightness: i64, _pulse_rate: f64) {
         if turn_on_light {
             // light on
         } else {
@@ -23,7 +23,7 @@ mod tests {
             parameters: vec![],
         };
 
-        let converted_function_call = CHANGE_LIGHT.to_fn_call().unwrap();
+        let converted_function_call = _CHANGE_LIGHT.to_fn_call().unwrap();
 
         assert_eq!(converted_function_call.name, expected_function_call.name);
         assert_eq!(converted_function_call.description, expected_function_call.description);
@@ -58,7 +58,7 @@ mod tests {
             ],
         };
 
-        let converted_function_call = CHANGE_LIGHT.to_fn_call().unwrap();
+        let converted_function_call = _CHANGE_LIGHT.to_fn_call().unwrap();
 
         assert_eq!(converted_function_call.parameters, expected_function_call.parameters);
     }

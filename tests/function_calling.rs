@@ -5,7 +5,6 @@
 #[cfg(test)]
 mod tests {
     use open_ai_rust::{logoi::{input::{payload::builder::PayLoadBuilder, tool::{EnumValues, FunctionCall, FunctionParameter, FunctionType}}, message::{ChatMessage, ChatMessageRole}, models::OpenAiModel}, requests::open_ai_msg, set_key};
-    use serde_json::Value;
 
     #[tokio::test]
     async fn can_do_function_call_simple() {

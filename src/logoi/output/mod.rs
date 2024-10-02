@@ -67,21 +67,28 @@ impl AiMsgResponse {
 
     pub fn get_tool_calls(&self) -> Vec<FunctionCallRes> {
         self.choices.iter().map(|choice| {
-            choice.message.tool_calls.iter().map(|tool_call| {
-                tool_call.function.clone()
-            }).collect::<Vec<FunctionCallRes>>()
-        }).flatten().collect()
+            choice.message.tool_calls.clone().unwrap_or_default()
+        }).flatten().map(|tool_call| {
+            tool_call.function.clone()
+        }).collect()
     }
 
-    pub fn get_tool_call_args(&self) -> Result<Value, String> {
-        match self.choices.first() {
-            Some(choice) => match choice.message.tool_calls.first() {
-                Some(tool_call) => Ok(tool_call.get_args()),
-                None => return Err("No tool calls in first choice of in get tool call json".to_string())
-            },
-            None => return Err("No choices in get tool call json".to_string())
+    pub fn get_first_tool_call_args(&self) -> Result<Value, String> {
+        if let Some(choice) = self.choices.first() {
+            if let Some(tool_calls) = &choice.message.tool_calls {
+                if let Some(tool_call) = tool_calls.first() {
+                    Ok(tool_call.get_args())
+                } else {
+                    Err("No tool calls found".to_string())
+                }
+            } else {
+                Err("No tool calls found".to_string())
+            }
+        } else {
+            Err("No choices found".to_string())
         }
     }
+
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -103,7 +110,7 @@ pub struct Usage {
 pub struct AiResponseMessage {
     pub content: Option<String>,
     pub role: String,
-    pub tool_calls: Vec<ToolCallRes>,
+    pub tool_calls: Option<Vec<ToolCallRes>>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
