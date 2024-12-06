@@ -28,7 +28,7 @@ mod tests {
             id: "".to_string(),
             model: "".to_string(),
             object: "".to_string(),
-            usage: Usage { completion_tokens: 0, prompt_tokens: 0, total_tokens: 0 },
+            usage: Usage { completion_tokens: Some(0), prompt_tokens: 0, total_tokens: 0 },
             system_fingerprint: "".to_string(),
         };
 

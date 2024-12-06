@@ -3,6 +3,8 @@ use serde_json::Value;
 
 use crate::{logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}, API_KEY};
 
+pub mod embed;
+
 pub async fn open_ai_msg(
     payload: ChatPayLoad
 ) -> Result<AiMsgResponse, String> {

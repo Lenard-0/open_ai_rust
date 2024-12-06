@@ -101,7 +101,7 @@ pub struct Choice {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Usage {
-    pub completion_tokens: i32,
+    pub completion_tokens: Option<i32>,
     pub prompt_tokens: i32,
     pub total_tokens: i32,
 }
