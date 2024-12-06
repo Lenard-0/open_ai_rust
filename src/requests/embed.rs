@@ -53,7 +53,6 @@ pub async fn embed(
     if response.status().is_success() {
         let json: Value = response.json().await.map_err(|e| format!("Error reading response JSON: {}", e))?;
         let json: EmbedResponse = serde_json::from_value(json).map_err(|e| format!("Error parsing OpenAI response: {}", e))?;
-        println!("Response JSON: {:#?}", json);
         return match json.data.get(0) {
             Some(embedding) => Ok(embedding.embedding.clone()),
             None => Err("No embeddings found in response".to_string())
