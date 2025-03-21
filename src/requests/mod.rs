@@ -19,12 +19,11 @@ pub async fn open_ai_msg(
         }
     };
 
-    let payload_as_json = match serde_json::to_value(&payload) {
-        Ok(data) => data,
-        Err(e) => return Err(format!("Error serializing payload to JSON: {}", e))
-    };
+    // let payload_as_json = match serde_json::to_value(&payload) {
+    //     Ok(data) => data,
+    //     Err(e) => return Err(format!("Error serializing payload to JSON: {}", e))
+    // };
 
-    println!("Payload: {:#?}", payload_as_json);
 
     let response = match client.post(url)
         .header("Content-Type", "application/json")
@@ -38,9 +37,7 @@ pub async fn open_ai_msg(
 
         if response.status().is_success() {
             let json: Value = response.json().await.map_err(|e| format!("Error reading response JSON: {}", e))?;
-            println!("Response JSON: {:#?}", json);
             let response_data: AiMsgResponse = serde_json::from_value(json).map_err(|e| format!("Error parsing OpenAI response: {}", e))?;
-            println!("Parsed Response: {:#?}", response_data);
             Ok(response_data)
         } else {
         let status = response.status();

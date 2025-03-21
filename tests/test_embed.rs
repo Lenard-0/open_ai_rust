@@ -10,7 +10,6 @@ mod tests {
         set_key(std::env::var("OPENAI_SK").unwrap()); // Set the OpenAI API key from the environment variable
         let text = "Hello, world!".to_string();
         let embedding = embed(text, None).await.unwrap();
-        println!("Embedding: {:#?}", embedding);
         assert_eq!(embedding.len(), 1536);
     }
 }

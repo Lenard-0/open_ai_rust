@@ -43,7 +43,7 @@ mod tests {
         let res: AiMsgResponse = match serde_json::from_value(json_res) {
             Ok(data) => data,
             Err(e) => {
-                println!("Error: {}", e);
+                eprintln!("Error parsing JSON: {}", e);
                 panic!();
             }
         };
@@ -54,11 +54,9 @@ mod tests {
         assert_eq!(function_call.name, "create_questions");
 
         let questions = function_call.arguments["questions"].as_array().unwrap();
-        println!("questions: {:#?}", questions);
         assert_eq!(questions.len(), 10);
 
         let first_question = &questions[0];
-        println!("first_question: {:#?}", first_question);
         assert_eq!(first_question["question"], "Which of the following is true about the formatting style used in lecture notes?");
         assert_eq!(first_question["multiple_choice"], json!({
             "possible_answers": [

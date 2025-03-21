@@ -34,7 +34,6 @@ fn parse_raw_params(parameters: [&str; 100]) -> Result<Vec<FunctionParameter>, S
             None => continue,
         };
 
-        println!("Name: {name}, _type: {_type}");
 
         let refined_parameter = FunctionParameter {
             name: name.to_string(),
