@@ -1,7 +1,7 @@
 
 use serde::Deserialize;
 use serde_json::{json, Value};
-use crate::{logoi::output::Usage, API_KEY};
+use crate::{logoi::output::Usage, API_KEY, EMBEDDINGS_ENDPOINT};
 
 #[derive(Debug, Deserialize)]
 pub struct EmbedResponse {
@@ -22,7 +22,14 @@ pub async fn embed(
     text: String,
     model: Option<String> // if None, use default model
 ) -> Result<Vec<f32>, String> {
-    let url = "https://api.openai.com/v1/embeddings";
+    let url = {
+        let url = EMBEDDINGS_ENDPOINT.lock().map_err(|e| format!("Error getting Embeddings endpoint from Mutex lock: {}", e))?;
+        if url.is_empty() {
+            "https://api.openai.com/v1/embeddings".to_string()
+        } else {
+            url.to_string()
+        }
+    };
 
     let client = reqwest::Client::new();
     let api_key = {

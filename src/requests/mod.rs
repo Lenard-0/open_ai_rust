@@ -1,14 +1,21 @@
 use reqwest::Client;
 use serde_json::Value;
 
-use crate::{logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}, API_KEY};
+use crate::{logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}, API_KEY, OPENAI_MSG_ENDPOINT};
 
 pub mod embed;
 
 pub async fn open_ai_msg(
     payload: ChatPayLoad
 ) -> Result<AiMsgResponse, String> {
-    let url = "https://api.openai.com/v1/chat/completions";
+    let url = {
+        let url = OPENAI_MSG_ENDPOINT.lock().map_err(|e| format!("Error getting Embeddings endpoint from Mutex lock: {}", e))?;
+        if url.is_empty() {
+            "https://api.openai.com/v1/chat/completions".to_string()
+        } else {
+            url.to_string()
+        }
+    };
 
     let client = Client::new();
 
