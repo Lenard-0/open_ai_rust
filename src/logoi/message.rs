@@ -1,7 +1,7 @@
 use core::fmt;
 use std::fmt::{Display, Formatter};
-
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -18,7 +18,7 @@ pub struct ChatMessage {
     pub name: Option<String>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Serialize, Debug, Clone, Copy, ToSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum ChatMessageRole {
     System,
