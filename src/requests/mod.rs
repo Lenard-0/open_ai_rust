@@ -44,7 +44,6 @@ pub async fn open_ai_msg(
 
         if response.status().is_success() {
             let json: Value = response.json().await.map_err(|e| format!("Error reading response JSON: {}", e))?;
-            println!("Response JSON: {:#?}", json);
             let response_data: AiMsgResponse = serde_json::from_value(json).map_err(|e| format!("Error parsing OpenAI response: {}", e))?;
             Ok(response_data)
         } else {
