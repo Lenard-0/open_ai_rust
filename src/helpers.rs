@@ -8,7 +8,7 @@ pub fn get_url(end_point: &str) -> Result<String, String> {
         if url.is_empty() {
             "https://api.openai.com".to_string()
         } else {
-            url.to_string()
+            return Ok(url.to_string())
         }
     };
 
