@@ -2,6 +2,7 @@ use std::sync::Mutex;
 
 pub mod logoi;
 pub mod requests;
+pub mod helpers;
 
 static API_KEY: Mutex<String> = Mutex::new(String::new());
 static OPENAI_MSG_ENDPOINT: Mutex<String> = Mutex::new(String::new());

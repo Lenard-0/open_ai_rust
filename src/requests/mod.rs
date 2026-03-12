@@ -1,40 +1,19 @@
 use reqwest::Client;
 use serde_json::Value;
 
-use crate::{logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}, API_KEY, OPENAI_MSG_ENDPOINT};
+use crate::{API_KEY, OPENAI_MSG_ENDPOINT, helpers::{get_key, get_url}, logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}};
 
 pub mod embed;
+pub mod audio;
 
 pub async fn open_ai_msg(
     payload: ChatPayLoad
 ) -> Result<AiMsgResponse, String> {
-    let url = {
-        let url = OPENAI_MSG_ENDPOINT.lock().map_err(|e| format!("Error getting Embeddings endpoint from Mutex lock: {}", e))?;
-        if url.is_empty() {
-            "https://api.openai.com/v1/chat/completions".to_string()
-        } else {
-            url.to_string()
-        }
-    };
-
     let client = Client::new();
-
-    let api_key = {
-        match API_KEY.lock() {
-            Ok(key) => key.clone(),
-            Err(e) => return Err(format!("Error getting API key from Mutex lock: {}", e))
-        }
-    };
-
-    // let payload_as_json = match serde_json::to_value(&payload) {
-    //     Ok(data) => data,
-    //     Err(e) => return Err(format!("Error serializing payload to JSON: {}", e))
-    // };
-
-
+    let url = get_url("/v1/chat/completions")?;
     let response = match client.post(url)
         .header("Content-Type", "application/json")
-        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Authorization", format!("Bearer {}", get_key()?))
         .json(&payload)
         .send()
         .await {

@@ -1,7 +1,7 @@
 
 use serde::Deserialize;
 use serde_json::{json, Value};
-use crate::{logoi::output::Usage, API_KEY, EMBEDDINGS_ENDPOINT};
+use crate::{API_KEY, EMBEDDINGS_ENDPOINT, helpers::{get_key, get_url}, logoi::output::Usage};
 
 #[derive(Debug, Deserialize)]
 pub struct EmbedResponse {
@@ -22,25 +22,10 @@ pub async fn embed(
     text: String,
     model: Option<String> // if None, use default model
 ) -> Result<Vec<f32>, String> {
-    let url = {
-        let url = EMBEDDINGS_ENDPOINT.lock().map_err(|e| format!("Error getting Embeddings endpoint from Mutex lock: {}", e))?;
-        if url.is_empty() {
-            "https://api.openai.com/v1/embeddings".to_string()
-        } else {
-            url.to_string()
-        }
-    };
-
     let client = reqwest::Client::new();
-    let api_key = {
-        match API_KEY.lock() {
-            Ok(key) => key.clone(),
-            Err(e) => return Err(format!("Error getting API key from Mutex lock: {}", e))
-        }
-    };
 
+    let url = get_url("/v1/embeddings")?;
     let model = model.unwrap_or("text-embedding-ada-002".to_string());
-
     let body = json!({
         "input": text,
         "model": model,
@@ -49,7 +34,7 @@ pub async fn embed(
 
     let response = match client.post(url)
         .header("Content-Type", "application/json")
-        .bearer_auth(api_key)
+        .bearer_auth(get_key()?)
         .json(&body)
         .send()
         .await {
