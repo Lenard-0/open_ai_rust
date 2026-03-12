@@ -1,6 +1,6 @@
 [package]
 name = "open_ai_rust"
-version = "0.2.13"
+version = "0.2.14"
 edition = "2021"
 authors = ["Lachy Hislop <lachie.hislop@gmail.com>"]
 description = "Open AI SDK for Rust. To my knowledge, the only fully comprehensive and up-to-date Open AI crate built in and for Rust. Provides both low-level control with high level ergonomics for doing cool things (the whole reason we use Rust in the first place). Is maintained and has been used and tested in products used in production."
