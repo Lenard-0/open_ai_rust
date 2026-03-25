@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+
 pub mod logoi;
 pub mod requests;
 pub mod helpers;
@@ -26,4 +27,10 @@ pub fn set_embeddings_endpoint(value: String) {
 
 pub fn set_embeddings_endpoint_default() {
     *EMBEDDINGS_ENDPOINT.lock().unwrap() = "https://api.openai.com/v1/embeddings".to_string();
+}
+
+#[derive(Clone, Copy)]
+pub enum RequestType {
+    ChatCompletion,
+    Embedding,
 }

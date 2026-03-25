@@ -1,7 +1,8 @@
 
 use serde::Deserialize;
 use serde_json::{json, Value};
-use crate::{API_KEY, EMBEDDINGS_ENDPOINT, helpers::{get_key, get_url}, logoi::output::Usage};
+use crate::{RequestType, helpers::{get_key, get_url}, logoi::output::Usage};
+
 
 #[derive(Debug, Deserialize)]
 pub struct EmbedResponse {
@@ -24,7 +25,7 @@ pub async fn embed(
 ) -> Result<Vec<f32>, String> {
     let client = reqwest::Client::new();
 
-    let url = get_url("/v1/embeddings")?;
+    let url = get_url(RequestType::Embedding)?;
     let model = model.unwrap_or("text-embedding-ada-002".to_string());
     let body = json!({
         "input": text,
@@ -51,7 +52,7 @@ pub async fn embed(
         }
     } else {
         let status = response.status();
-        return Err(format!("Open Ai Error! Status: {status}       Err Msgs: {}", match response.text().await {
+        return Err(format!("Open Ai Embed Error! Status: {status}       Err Msgs: {}", match response.text().await {
             Ok(data) => data,
             Err(e) => format!("Error parsing Open Ai response: {}", e)
         }))

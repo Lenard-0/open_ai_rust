@@ -1,7 +1,7 @@
 use reqwest::Client;
 use serde_json::Value;
+use crate::{RequestType, helpers::{get_key, get_url}, logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}};
 
-use crate::{API_KEY, OPENAI_MSG_ENDPOINT, helpers::{get_key, get_url}, logoi::{input::payload::ChatPayLoad, output::AiMsgResponse}};
 
 pub mod embed;
 pub mod audio;
@@ -10,7 +10,7 @@ pub async fn open_ai_msg(
     payload: ChatPayLoad
 ) -> Result<AiMsgResponse, String> {
     let client = Client::new();
-    let url = get_url("/v1/chat/completions")?;
+    let url = get_url(RequestType::ChatCompletion)?;
     let response = match client.post(url)
         .header("Content-Type", "application/json")
         .header("Authorization", format!("Bearer {}", get_key()?))
@@ -27,7 +27,7 @@ pub async fn open_ai_msg(
             Ok(response_data)
         } else {
         let status = response.status();
-        return Err(format!("Open Ai Error! Status: {status}       Err Msgs: {}", match response.text().await {
+        return Err(format!("Open Ai Message Error! Status: {status}       Err Msgs: {}", match response.text().await {
             Ok(data) => data,
             Err(e) => format!("Error parsing Open Ai response: {}", e)
         }))

@@ -4,12 +4,13 @@
 // IF A TEST USING THE FUNCTION CALL DOES FAIL TRY RUNNING IT AGAIN BEFORE DEBUGGING
 #[cfg(test)]
 mod tests {
-    use open_ai_rust::{logoi::{input::{payload::builder::PayLoadBuilder, tool::{EnumValues, FunctionCall, FunctionParameter, FunctionType}}, message::{ChatMessage, ChatMessageRole}, models::OpenAiModel}, requests::open_ai_msg, set_key};
+    use open_ai_rust::{logoi::{input::{payload::builder::PayLoadBuilder, tool::{EnumValues, FunctionCall, FunctionParameter, FunctionType}}, message::{ChatMessage, ChatMessageRole}, models::OpenAiModel}, requests::open_ai_msg, set_ai_msg_endpoint, set_key};
 
     #[tokio::test]
     async fn can_do_function_call_simple() {
         dotenv::dotenv().ok();
-        set_key(std::env::var("OPENAI_SK").unwrap()); // Set the OpenAI API key from the environment variable
+        set_key(std::env::var("AZURE_AI_SK").unwrap());
+        set_ai_msg_endpoint(std::env::var("AZURE_AI_ENDPOINT").unwrap());
 
         let system_msg = ChatMessage {
             role: ChatMessageRole::System,
