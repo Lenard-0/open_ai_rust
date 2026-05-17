@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use open_ai_rust::logoi::output::AiMsgResponse;
@@ -57,16 +56,21 @@ mod tests {
         assert_eq!(questions.len(), 10);
 
         let first_question = &questions[0];
-        assert_eq!(first_question["question"], "Which of the following is true about the formatting style used in lecture notes?");
-        assert_eq!(first_question["multiple_choice"], json!({
-            "possible_answers": [
-                {"answer": "Headings are used to organize content, followed by dot points for details.", "correct": true},
-                {"answer": "Dot points mark major topics, followed by additional details.", "correct": false},
-                {"answer": "Excerpts are used to enumerate the primary points.", "correct": false},
-                {"answer": "Headings contain all content without any additional formatting.", "correct": false}
-            ],
-            "answer_explanation": "Headings are used to organize the main topics of the lecture notes, while dot points are used to provide more detailed information related to those topics."
-        }));
+        assert_eq!(
+            first_question["question"],
+            "Which of the following is true about the formatting style used in lecture notes?"
+        );
+        assert_eq!(
+            first_question["multiple_choice"],
+            json!({
+                "possible_answers": [
+                    {"answer": "Headings are used to organize content, followed by dot points for details.", "correct": true},
+                    {"answer": "Dot points mark major topics, followed by additional details.", "correct": false},
+                    {"answer": "Excerpts are used to enumerate the primary points.", "correct": false},
+                    {"answer": "Headings contain all content without any additional formatting.", "correct": false}
+                ],
+                "answer_explanation": "Headings are used to organize the main topics of the lecture notes, while dot points are used to provide more detailed information related to those topics."
+            })
+        );
     }
 }
-

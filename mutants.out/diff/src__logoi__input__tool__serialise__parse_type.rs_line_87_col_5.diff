@@ -1,0 +1,28 @@
+--- src/logoi/input/tool/serialise/parse_type.rs
++++ replace parse_map -> Result<(), String> with Ok(())
+@@ -79,24 +79,17 @@
+ 
+     Ok(())
+ }
+ 
+ fn parse_map(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     value: &FunctionType,
+ ) -> Result<(), String> {
+-    param_map.insert("type".to_string(), json!("object"));
+-    let mut additional = serde_json::Map::new();
+-    insert_type(&mut additional, value)?;
+-    param_map.insert(
+-        "additionalProperties".to_string(),
+-        serde_json::Value::Object(additional),
+-    );
+-    Ok(())
++    Ok(()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn parse_oneof(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     variants: &[FunctionVariant],
+ ) -> Result<(), String> {
+     let mut arr: Vec<Value> = Vec::with_capacity(variants.len());
+     for v in variants {

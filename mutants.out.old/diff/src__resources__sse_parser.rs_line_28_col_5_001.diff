@@ -1,0 +1,67 @@
+--- src/resources/sse_parser.rs
++++ replace parse_next_event -> Option<SseEvent> with Some(Default::default())
+@@ -20,63 +20,17 @@
+ ///
+ /// Skips comment lines (`:foo`), `event:`/`id:`/`retry:` fields, and empty events.
+ /// Honours both `\n\n` and `\r\n\r\n` event terminators, choosing whichever appears first
+ /// in the buffer.
+ ///
+ /// Multi-line `data:` fields are concatenated with `\n` per spec. A single optional space
+ /// after `data:` is stripped (and only one — `"data:  x"` keeps one leading space).
+ pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {
+-    loop {
+-        // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick
+-        // whichever appears earliest in the buffer.
+-        let crlf = buffer.find("\r\n\r\n");
+-        let lf = buffer.find("\n\n");
+-        let (idx, sep_len) = match (crlf, lf) {
+-            (Some(c), Some(l)) if c <= l => (c, 4),
+-            (Some(c), None) => (c, 4),
+-            (_, Some(l)) => (l, 2),
+-            (None, None) => return None,
+-        };
+-
+-        let raw_event = buffer[..idx].to_string();
+-        buffer.drain(..idx + sep_len);
+-
+-        let mut data = String::new();
+-        for line in raw_event.split('\n').map(strip_trailing_cr) {
+-            if line.is_empty() {
+-                continue;
+-            }
+-            if line.starts_with(':') {
+-                // Comment line — ignore.
+-                continue;
+-            }
+-            // Split into field name + value at the first colon.
+-            let (field, value) = match line.split_once(':') {
+-                Some((f, v)) => (f, strip_one_leading_space(v)),
+-                None => (line, ""),
+-            };
+-            if field == "data" {
+-                if !data.is_empty() {
+-                    data.push('\n');
+-                }
+-                data.push_str(value);
+-            }
+-            // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.
+-        }
+-
+-        if data.is_empty() {
+-            // Empty event (e.g. comment-only or all unknown fields) — keep scanning.
+-            continue;
+-        }
+-        if data == "[DONE]" {
+-            return Some(SseEvent::Done);
+-        }
+-        return Some(SseEvent::Data(data));
+-    }
++    Some(Default::default()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn strip_trailing_cr(s: &str) -> &str {
+     s.strip_suffix('\r').unwrap_or(s)
+ }
+ 
+ fn strip_one_leading_space(s: &str) -> &str {
+     s.strip_prefix(' ').unwrap_or(s)

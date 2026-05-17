@@ -1,0 +1,21 @@
+--- src/logoi/input/tool/serialise/parse_param.rs
++++ replace && with || in insert_param
+@@ -3,17 +3,17 @@
+ use serde_json::Map;
+ 
+ pub fn insert_param(
+     params_map: &mut Map<String, serde_json::Value>,
+     required_params: &mut Vec<String>,
+     param: &FunctionParameter,
+ ) -> Result<(), String> {
+     let is_optional_type = matches!(param._type, FunctionType::Option(_));
+-    if param.required && !is_optional_type {
++    if param.required || /* ~ changed by cargo-mutants ~ */ !is_optional_type {
+         required_params.push(param.name.clone());
+     }
+ 
+     let mut param_map = serde_json::Map::new();
+     insert_type(&mut param_map, &param._type)?;
+     if let Some(ref description) = param.description {
+         param_map.insert(
+             "description".to_string(),

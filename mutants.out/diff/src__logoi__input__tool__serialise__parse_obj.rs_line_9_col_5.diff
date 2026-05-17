@@ -1,0 +1,25 @@
+--- src/logoi/input/tool/serialise/parse_obj.rs
++++ replace insert_obj_into_param_map -> Result<(), String> with Ok(())
+@@ -1,21 +1,17 @@
+ use super::parse_param::insert_param;
+ use crate::logoi::input::tool::FunctionParameter;
+ use serde_json::Value;
+ 
+ pub fn insert_obj_into_param_map(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     obj: &Vec<FunctionParameter>,
+ ) -> Result<(), String> {
+-    let obj = parse_obj(obj)?;
+-    for (key, value) in obj {
+-        param_map.insert(key, value);
+-    }
+-    Ok(())
++    Ok(()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ pub fn parse_obj(obj: &Vec<FunctionParameter>) -> Result<serde_json::Map<String, Value>, String> {
+     let (fields_map, required_params) = match parse_fields(obj) {
+         Ok((fields_map, required_params)) => (fields_map, required_params),
+         Err(e) => return Err(e),
+     };
+ 

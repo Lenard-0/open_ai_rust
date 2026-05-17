@@ -1,0 +1,45 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&p"
+snapshot_kind: text
+---
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are helpful."
+    },
+    {
+      "role": "user",
+      "content": "Find me a coffee."
+    }
+  ],
+  "tool_choice": "auto",
+  "parallel_tool_calls": true,
+  "frequency_penalty": 0.1,
+  "logit_bias": {
+    "50256": -100
+  },
+  "logprobs": true,
+  "top_logprobs": 5,
+  "max_completion_tokens": 2048,
+  "reasoning_effort": "medium",
+  "n": 1,
+  "presence_penalty": 0.2,
+  "seed": 7,
+  "service_tier": "default",
+  "stop": [
+    "END"
+  ],
+  "stream_options": {
+    "include_usage": true
+  },
+  "temperature": 0.3,
+  "top_p": 0.95,
+  "metadata": {
+    "session": "abc-123"
+  },
+  "store": true,
+  "user": "user-42"
+}

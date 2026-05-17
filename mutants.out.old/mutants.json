@@ -1,0 +1,450 @@
+[
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace parse_next_event -> Option<SseEvent> with None\n@@ -20,63 +20,17 @@\n ///\n /// Skips comment lines (`:foo`), `event:`/`id:`/`retry:` fields, and empty events.\n /// Honours both `\\n\\n` and `\\r\\n\\r\\n` event terminators, choosing whichever appears first\n /// in the buffer.\n ///\n /// Multi-line `data:` fields are concatenated with `\\n` per spec. A single optional space\n /// after `data:` is stripped (and only one — `\"data:  x\"` keeps one leading space).\n pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {\n-    loop {\n-        // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick\n-        // whichever appears earliest in the buffer.\n-        let crlf = buffer.find(\"\\r\\n\\r\\n\");\n-        let lf = buffer.find(\"\\n\\n\");\n-        let (idx, sep_len) = match (crlf, lf) {\n-            (Some(c), Some(l)) if c <= l => (c, 4),\n-            (Some(c), None) => (c, 4),\n-            (_, Some(l)) => (l, 2),\n-            (None, None) => return None,\n-        };\n-\n-        let raw_event = buffer[..idx].to_string();\n-        buffer.drain(..idx + sep_len);\n-\n-        let mut data = String::new();\n-        for line in raw_event.split('\\n').map(strip_trailing_cr) {\n-            if line.is_empty() {\n-                continue;\n-            }\n-            if line.starts_with(':') {\n-                // Comment line — ignore.\n-                continue;\n-            }\n-            // Split into field name + value at the first colon.\n-            let (field, value) = match line.split_once(':') {\n-                Some((f, v)) => (f, strip_one_leading_space(v)),\n-                None => (line, \"\"),\n-            };\n-            if field == \"data\" {\n-                if !data.is_empty() {\n-                    data.push('\\n');\n-                }\n-                data.push_str(value);\n-            }\n-            // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.\n-        }\n-\n-        if data.is_empty() {\n-            // Empty event (e.g. comment-only or all unknown fields) — keep scanning.\n-            continue;\n-        }\n-        if data == \"[DONE]\" {\n-            return Some(SseEvent::Done);\n-        }\n-        return Some(SseEvent::Data(data));\n-    }\n+    None /* ~ changed by cargo-mutants ~ */\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n     s.strip_suffix('\\r').unwrap_or(s)\n }\n \n fn strip_one_leading_space(s: &str) -> &str {\n     s.strip_prefix(' ').unwrap_or(s)\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/resources/sse_parser.rs:28:5: replace parse_next_event -> Option<SseEvent> with None",
+    "package": "open_ai_rust",
+    "replacement": "None",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 74
+      },
+      "start": {
+        "column": 5,
+        "line": 28
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace parse_next_event -> Option<SseEvent> with Some(Default::default())\n@@ -20,63 +20,17 @@\n ///\n /// Skips comment lines (`:foo`), `event:`/`id:`/`retry:` fields, and empty events.\n /// Honours both `\\n\\n` and `\\r\\n\\r\\n` event terminators, choosing whichever appears first\n /// in the buffer.\n ///\n /// Multi-line `data:` fields are concatenated with `\\n` per spec. A single optional space\n /// after `data:` is stripped (and only one — `\"data:  x\"` keeps one leading space).\n pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {\n-    loop {\n-        // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick\n-        // whichever appears earliest in the buffer.\n-        let crlf = buffer.find(\"\\r\\n\\r\\n\");\n-        let lf = buffer.find(\"\\n\\n\");\n-        let (idx, sep_len) = match (crlf, lf) {\n-            (Some(c), Some(l)) if c <= l => (c, 4),\n-            (Some(c), None) => (c, 4),\n-            (_, Some(l)) => (l, 2),\n-            (None, None) => return None,\n-        };\n-\n-        let raw_event = buffer[..idx].to_string();\n-        buffer.drain(..idx + sep_len);\n-\n-        let mut data = String::new();\n-        for line in raw_event.split('\\n').map(strip_trailing_cr) {\n-            if line.is_empty() {\n-                continue;\n-            }\n-            if line.starts_with(':') {\n-                // Comment line — ignore.\n-                continue;\n-            }\n-            // Split into field name + value at the first colon.\n-            let (field, value) = match line.split_once(':') {\n-                Some((f, v)) => (f, strip_one_leading_space(v)),\n-                None => (line, \"\"),\n-            };\n-            if field == \"data\" {\n-                if !data.is_empty() {\n-                    data.push('\\n');\n-                }\n-                data.push_str(value);\n-            }\n-            // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.\n-        }\n-\n-        if data.is_empty() {\n-            // Empty event (e.g. comment-only or all unknown fields) — keep scanning.\n-            continue;\n-        }\n-        if data == \"[DONE]\" {\n-            return Some(SseEvent::Done);\n-        }\n-        return Some(SseEvent::Data(data));\n-    }\n+    Some(Default::default()) /* ~ changed by cargo-mutants ~ */\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n     s.strip_suffix('\\r').unwrap_or(s)\n }\n \n fn strip_one_leading_space(s: &str) -> &str {\n     s.strip_prefix(' ').unwrap_or(s)\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/resources/sse_parser.rs:28:5: replace parse_next_event -> Option<SseEvent> with Some(Default::default())",
+    "package": "open_ai_rust",
+    "replacement": "Some(Default::default())",
+    "span": {
+      "end": {
+        "column": 6,
+        "line": 74
+      },
+      "start": {
+        "column": 5,
+        "line": 28
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace match guard c <= l with true in parse_next_event\n@@ -26,17 +26,17 @@\n /// after `data:` is stripped (and only one — `\"data:  x\"` keeps one leading space).\n pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {\n     loop {\n         // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick\n         // whichever appears earliest in the buffer.\n         let crlf = buffer.find(\"\\r\\n\\r\\n\");\n         let lf = buffer.find(\"\\n\\n\");\n         let (idx, sep_len) = match (crlf, lf) {\n-            (Some(c), Some(l)) if c <= l => (c, 4),\n+            (Some(c), Some(l)) if true /* ~ changed by cargo-mutants ~ */ => (c, 4),\n             (Some(c), None) => (c, 4),\n             (_, Some(l)) => (l, 2),\n             (None, None) => return None,\n         };\n \n         let raw_event = buffer[..idx].to_string();\n         buffer.drain(..idx + sep_len);\n \n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/resources/sse_parser.rs:34:35: replace match guard c <= l with true in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "true",
+    "span": {
+      "end": {
+        "column": 41,
+        "line": 34
+      },
+      "start": {
+        "column": 35,
+        "line": 34
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace match guard c <= l with false in parse_next_event\n@@ -26,17 +26,17 @@\n /// after `data:` is stripped (and only one — `\"data:  x\"` keeps one leading space).\n pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {\n     loop {\n         // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick\n         // whichever appears earliest in the buffer.\n         let crlf = buffer.find(\"\\r\\n\\r\\n\");\n         let lf = buffer.find(\"\\n\\n\");\n         let (idx, sep_len) = match (crlf, lf) {\n-            (Some(c), Some(l)) if c <= l => (c, 4),\n+            (Some(c), Some(l)) if false /* ~ changed by cargo-mutants ~ */ => (c, 4),\n             (Some(c), None) => (c, 4),\n             (_, Some(l)) => (l, 2),\n             (None, None) => return None,\n         };\n \n         let raw_event = buffer[..idx].to_string();\n         buffer.drain(..idx + sep_len);\n \n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "MatchArmGuard",
+    "name": "src/resources/sse_parser.rs:34:35: replace match guard c <= l with false in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "false",
+    "span": {
+      "end": {
+        "column": 41,
+        "line": 34
+      },
+      "start": {
+        "column": 35,
+        "line": 34
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace <= with > in parse_next_event\n@@ -26,17 +26,17 @@\n /// after `data:` is stripped (and only one — `\"data:  x\"` keeps one leading space).\n pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {\n     loop {\n         // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick\n         // whichever appears earliest in the buffer.\n         let crlf = buffer.find(\"\\r\\n\\r\\n\");\n         let lf = buffer.find(\"\\n\\n\");\n         let (idx, sep_len) = match (crlf, lf) {\n-            (Some(c), Some(l)) if c <= l => (c, 4),\n+            (Some(c), Some(l)) if c > /* ~ changed by cargo-mutants ~ */ l => (c, 4),\n             (Some(c), None) => (c, 4),\n             (_, Some(l)) => (l, 2),\n             (None, None) => return None,\n         };\n \n         let raw_event = buffer[..idx].to_string();\n         buffer.drain(..idx + sep_len);\n \n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/resources/sse_parser.rs:34:37: replace <= with > in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": ">",
+    "span": {
+      "end": {
+        "column": 39,
+        "line": 34
+      },
+      "start": {
+        "column": 37,
+        "line": 34
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace + with - in parse_next_event\n@@ -33,17 +33,17 @@\n         let (idx, sep_len) = match (crlf, lf) {\n             (Some(c), Some(l)) if c <= l => (c, 4),\n             (Some(c), None) => (c, 4),\n             (_, Some(l)) => (l, 2),\n             (None, None) => return None,\n         };\n \n         let raw_event = buffer[..idx].to_string();\n-        buffer.drain(..idx + sep_len);\n+        buffer.drain(..idx - /* ~ changed by cargo-mutants ~ */ sep_len);\n \n         let mut data = String::new();\n         for line in raw_event.split('\\n').map(strip_trailing_cr) {\n             if line.is_empty() {\n                 continue;\n             }\n             if line.starts_with(':') {\n                 // Comment line — ignore.\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/resources/sse_parser.rs:41:28: replace + with - in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "-",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 41
+      },
+      "start": {
+        "column": 28,
+        "line": 41
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace + with * in parse_next_event\n@@ -33,17 +33,17 @@\n         let (idx, sep_len) = match (crlf, lf) {\n             (Some(c), Some(l)) if c <= l => (c, 4),\n             (Some(c), None) => (c, 4),\n             (_, Some(l)) => (l, 2),\n             (None, None) => return None,\n         };\n \n         let raw_event = buffer[..idx].to_string();\n-        buffer.drain(..idx + sep_len);\n+        buffer.drain(..idx * /* ~ changed by cargo-mutants ~ */ sep_len);\n \n         let mut data = String::new();\n         for line in raw_event.split('\\n').map(strip_trailing_cr) {\n             if line.is_empty() {\n                 continue;\n             }\n             if line.starts_with(':') {\n                 // Comment line — ignore.\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/resources/sse_parser.rs:41:28: replace + with * in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "*",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 41
+      },
+      "start": {
+        "column": 28,
+        "line": 41
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace == with != in parse_next_event\n@@ -49,17 +49,17 @@\n                 // Comment line — ignore.\n                 continue;\n             }\n             // Split into field name + value at the first colon.\n             let (field, value) = match line.split_once(':') {\n                 Some((f, v)) => (f, strip_one_leading_space(v)),\n                 None => (line, \"\"),\n             };\n-            if field == \"data\" {\n+            if field != /* ~ changed by cargo-mutants ~ */ \"data\" {\n                 if !data.is_empty() {\n                     data.push('\\n');\n                 }\n                 data.push_str(value);\n             }\n             // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.\n         }\n \n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/resources/sse_parser.rs:57:22: replace == with != in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 24,
+        "line": 57
+      },
+      "start": {
+        "column": 22,
+        "line": 57
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ delete ! in parse_next_event\n@@ -50,17 +50,17 @@\n                 continue;\n             }\n             // Split into field name + value at the first colon.\n             let (field, value) = match line.split_once(':') {\n                 Some((f, v)) => (f, strip_one_leading_space(v)),\n                 None => (line, \"\"),\n             };\n             if field == \"data\" {\n-                if !data.is_empty() {\n+                if  /* ~ changed by cargo-mutants ~ */data.is_empty() {\n                     data.push('\\n');\n                 }\n                 data.push_str(value);\n             }\n             // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.\n         }\n \n         if data.is_empty() {\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "src/resources/sse_parser.rs:58:20: delete ! in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 58
+      },
+      "start": {
+        "column": 20,
+        "line": 58
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace == with != in parse_next_event\n@@ -62,17 +62,17 @@\n             }\n             // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.\n         }\n \n         if data.is_empty() {\n             // Empty event (e.g. comment-only or all unknown fields) — keep scanning.\n             continue;\n         }\n-        if data == \"[DONE]\" {\n+        if data != /* ~ changed by cargo-mutants ~ */ \"[DONE]\" {\n             return Some(SseEvent::Done);\n         }\n         return Some(SseEvent::Data(data));\n     }\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n     s.strip_suffix('\\r').unwrap_or(s)\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "parse_next_event",
+      "return_type": "-> Option<SseEvent>",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 75
+        },
+        "start": {
+          "column": 1,
+          "line": 18
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "src/resources/sse_parser.rs:70:17: replace == with != in parse_next_event",
+    "package": "open_ai_rust",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 70
+      },
+      "start": {
+        "column": 17,
+        "line": 70
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace strip_trailing_cr -> &str with \"\"\n@@ -70,17 +70,17 @@\n         if data == \"[DONE]\" {\n             return Some(SseEvent::Done);\n         }\n         return Some(SseEvent::Data(data));\n     }\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n-    s.strip_suffix('\\r').unwrap_or(s)\n+    \"\" /* ~ changed by cargo-mutants ~ */\n }\n \n fn strip_one_leading_space(s: &str) -> &str {\n     s.strip_prefix(' ').unwrap_or(s)\n }\n \n #[cfg(test)]\n mod tests {\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "strip_trailing_cr",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 79
+        },
+        "start": {
+          "column": 1,
+          "line": 77
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/resources/sse_parser.rs:78:5: replace strip_trailing_cr -> &str with \"\"",
+    "package": "open_ai_rust",
+    "replacement": "\"\"",
+    "span": {
+      "end": {
+        "column": 38,
+        "line": 78
+      },
+      "start": {
+        "column": 5,
+        "line": 78
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace strip_trailing_cr -> &str with \"xyzzy\"\n@@ -70,17 +70,17 @@\n         if data == \"[DONE]\" {\n             return Some(SseEvent::Done);\n         }\n         return Some(SseEvent::Data(data));\n     }\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n-    s.strip_suffix('\\r').unwrap_or(s)\n+    \"xyzzy\" /* ~ changed by cargo-mutants ~ */\n }\n \n fn strip_one_leading_space(s: &str) -> &str {\n     s.strip_prefix(' ').unwrap_or(s)\n }\n \n #[cfg(test)]\n mod tests {\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "strip_trailing_cr",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 79
+        },
+        "start": {
+          "column": 1,
+          "line": 77
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/resources/sse_parser.rs:78:5: replace strip_trailing_cr -> &str with \"xyzzy\"",
+    "package": "open_ai_rust",
+    "replacement": "\"xyzzy\"",
+    "span": {
+      "end": {
+        "column": 38,
+        "line": 78
+      },
+      "start": {
+        "column": 5,
+        "line": 78
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace strip_one_leading_space -> &str with \"\"\n@@ -74,17 +74,17 @@\n     }\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n     s.strip_suffix('\\r').unwrap_or(s)\n }\n \n fn strip_one_leading_space(s: &str) -> &str {\n-    s.strip_prefix(' ').unwrap_or(s)\n+    \"\" /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n \n     fn drain_all(mut buf: String) -> (Vec<SseEvent>, String) {\n         let mut out = Vec::new();\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "strip_one_leading_space",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 83
+        },
+        "start": {
+          "column": 1,
+          "line": 81
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/resources/sse_parser.rs:82:5: replace strip_one_leading_space -> &str with \"\"",
+    "package": "open_ai_rust",
+    "replacement": "\"\"",
+    "span": {
+      "end": {
+        "column": 37,
+        "line": 82
+      },
+      "start": {
+        "column": 5,
+        "line": 82
+      }
+    }
+  },
+  {
+    "diff": "--- src/resources/sse_parser.rs\n+++ replace strip_one_leading_space -> &str with \"xyzzy\"\n@@ -74,17 +74,17 @@\n     }\n }\n \n fn strip_trailing_cr(s: &str) -> &str {\n     s.strip_suffix('\\r').unwrap_or(s)\n }\n \n fn strip_one_leading_space(s: &str) -> &str {\n-    s.strip_prefix(' ').unwrap_or(s)\n+    \"xyzzy\" /* ~ changed by cargo-mutants ~ */\n }\n \n #[cfg(test)]\n mod tests {\n     use super::*;\n \n     fn drain_all(mut buf: String) -> (Vec<SseEvent>, String) {\n         let mut out = Vec::new();\n",
+    "file": "src/resources/sse_parser.rs",
+    "function": {
+      "function_name": "strip_one_leading_space",
+      "return_type": "-> &str",
+      "span": {
+        "end": {
+          "column": 2,
+          "line": 83
+        },
+        "start": {
+          "column": 1,
+          "line": 81
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "src/resources/sse_parser.rs:82:5: replace strip_one_leading_space -> &str with \"xyzzy\"",
+    "package": "open_ai_rust",
+    "replacement": "\"xyzzy\"",
+    "span": {
+      "end": {
+        "column": 37,
+        "line": 82
+      },
+      "start": {
+        "column": 5,
+        "line": 82
+      }
+    }
+  }
+]

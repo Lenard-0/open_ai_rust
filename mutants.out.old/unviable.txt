@@ -1,0 +1,1 @@
+src/resources/sse_parser.rs:28:5: replace parse_next_event -> Option<SseEvent> with Some(Default::default())

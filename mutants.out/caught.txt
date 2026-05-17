@@ -1,0 +1,15 @@
+src/logoi/input/tool/serialise/parse_obj.rs:9:5: replace insert_obj_into_param_map -> Result<(), String> with Ok(())
+src/logoi/input/tool/serialise/parse_obj.rs:17:5: replace parse_obj -> Result<serde_json::Map<String, Value>, String> with Ok(Default::default())
+src/logoi/input/tool/serialise/parse_obj.rs:50:5: replace parse_fields -> Result<(serde_json::Map<String, Value>, Vec<String>), String> with Ok((Default::default(), vec![]))
+src/logoi/input/tool/serialise/parse_obj.rs:50:5: replace parse_fields -> Result<(serde_json::Map<String, Value>, Vec<String>), String> with Ok((Default::default(), vec![String::new()]))
+src/logoi/input/tool/serialise/parse_obj.rs:50:5: replace parse_fields -> Result<(serde_json::Map<String, Value>, Vec<String>), String> with Ok((Default::default(), vec!["xyzzy".into()]))
+src/logoi/input/tool/serialise/parse_param.rs:10:5: replace insert_param -> Result<(), String> with Ok(())
+src/logoi/input/tool/serialise/parse_param.rs:11:23: replace && with || in insert_param
+src/logoi/input/tool/serialise/parse_param.rs:11:26: delete ! in insert_param
+src/logoi/input/tool/serialise/parse_type.rs:11:5: replace insert_type -> Result<(), String> with Ok(())
+src/logoi/input/tool/serialise/parse_type.rs:33:5: replace insert_enum_type -> Result<(), String> with Ok(())
+src/logoi/input/tool/serialise/parse_type.rs:59:5: replace enum_value_to_string -> Result<String, String> with Ok(String::new())
+src/logoi/input/tool/serialise/parse_type.rs:59:5: replace enum_value_to_string -> Result<String, String> with Ok("xyzzy".into())
+src/logoi/input/tool/serialise/parse_type.rs:70:5: replace parse_array -> Result<(), String> with Ok(())
+src/logoi/input/tool/serialise/parse_type.rs:87:5: replace parse_map -> Result<(), String> with Ok(())
+src/logoi/input/tool/serialise/parse_type.rs:101:5: replace parse_oneof -> Result<(), String> with Ok(())

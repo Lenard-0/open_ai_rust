@@ -1,0 +1,10 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&m"
+snapshot_kind: text
+---
+{
+  "role": "tool",
+  "content": "{\"temperature\":22}",
+  "tool_call_id": "call_abc"
+}

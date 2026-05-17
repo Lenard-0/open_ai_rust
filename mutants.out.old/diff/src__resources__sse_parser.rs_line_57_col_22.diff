@@ -1,0 +1,21 @@
+--- src/resources/sse_parser.rs
++++ replace == with != in parse_next_event
+@@ -49,17 +49,17 @@
+                 // Comment line — ignore.
+                 continue;
+             }
+             // Split into field name + value at the first colon.
+             let (field, value) = match line.split_once(':') {
+                 Some((f, v)) => (f, strip_one_leading_space(v)),
+                 None => (line, ""),
+             };
+-            if field == "data" {
++            if field != /* ~ changed by cargo-mutants ~ */ "data" {
+                 if !data.is_empty() {
+                     data.push('\n');
+                 }
+                 data.push_str(value);
+             }
+             // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.
+         }
+ 

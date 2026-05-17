@@ -1,0 +1,25 @@
+--- src/logoi/input/tool/serialise/parse_type.rs
++++ replace enum_value_to_string -> Result<String, String> with Ok(String::new())
+@@ -51,21 +51,17 @@
+                 .collect(),
+         }),
+     );
+ 
+     Ok(())
+ }
+ 
+ fn enum_value_to_string(_type: &EnumValues) -> Result<String, String> {
+-    match _type {
+-        EnumValues::String(_) => Ok("string".to_string()),
+-        EnumValues::Int(_) => Ok("number".to_string()),
+-        EnumValues::Float(_) => Ok("number".to_string()),
+-    }
++    Ok(String::new()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn parse_array(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     items: &FunctionType,
+ ) -> Result<(), String> {
+     param_map.insert("type".to_string(), json!("array".to_string()));
+     param_map.insert(

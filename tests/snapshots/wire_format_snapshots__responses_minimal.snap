@@ -1,0 +1,9 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&r"
+snapshot_kind: text
+---
+{
+  "model": "gpt-4.1-mini",
+  "input": "hi"
+}

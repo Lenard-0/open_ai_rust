@@ -1,0 +1,21 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&m"
+snapshot_kind: text
+---
+{
+  "role": "user",
+  "content": [
+    {
+      "type": "text",
+      "text": "Describe this image:"
+    },
+    {
+      "type": "image_url",
+      "image_url": {
+        "url": "https://example.com/cat.png",
+        "detail": "high"
+      }
+    }
+  ]
+}

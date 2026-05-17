@@ -1,0 +1,19 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&m"
+snapshot_kind: text
+---
+{
+  "role": "assistant",
+  "content": "",
+  "tool_calls": [
+    {
+      "id": "call_abc",
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "arguments": "{\"city\":\"Sydney\"}"
+      }
+    }
+  ]
+}

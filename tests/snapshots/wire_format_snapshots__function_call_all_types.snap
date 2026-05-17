@@ -1,0 +1,97 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&fc"
+snapshot_kind: text
+---
+{
+  "description": "exercises every FunctionType variant",
+  "name": "do_everything",
+  "parameters": {
+    "properties": {
+      "a_bool": {
+        "type": "boolean"
+      },
+      "a_map": {
+        "additionalProperties": {
+          "type": "number"
+        },
+        "type": "object"
+      },
+      "a_number": {
+        "type": "number"
+      },
+      "a_oneof": {
+        "oneOf": [
+          {
+            "description": "a circle",
+            "properties": {
+              "radius": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "radius"
+            ],
+            "title": "Circle",
+            "type": "object"
+          },
+          {
+            "enum": [
+              "Square"
+            ],
+            "title": "Square",
+            "type": "string"
+          }
+        ]
+      },
+      "a_string": {
+        "description": "a string",
+        "type": "string"
+      },
+      "an_array": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "an_enum": {
+        "enum": [
+          "red",
+          "green"
+        ],
+        "type": "string"
+      },
+      "an_object": {
+        "properties": {
+          "inner_num": {
+            "type": "number"
+          },
+          "inner_str": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "inner_str"
+        ],
+        "type": "object"
+      },
+      "optional_legacy": {
+        "type": "string"
+      },
+      "optional_via_flag": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "a_string",
+      "a_number",
+      "a_bool",
+      "an_enum",
+      "an_array",
+      "a_map",
+      "an_object",
+      "a_oneof"
+    ],
+    "type": "object"
+  }
+}

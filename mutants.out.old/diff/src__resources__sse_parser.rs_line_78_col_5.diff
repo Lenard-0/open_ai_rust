@@ -1,0 +1,21 @@
+--- src/resources/sse_parser.rs
++++ replace strip_trailing_cr -> &str with ""
+@@ -70,17 +70,17 @@
+         if data == "[DONE]" {
+             return Some(SseEvent::Done);
+         }
+         return Some(SseEvent::Data(data));
+     }
+ }
+ 
+ fn strip_trailing_cr(s: &str) -> &str {
+-    s.strip_suffix('\r').unwrap_or(s)
++    "" /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn strip_one_leading_space(s: &str) -> &str {
+     s.strip_prefix(' ').unwrap_or(s)
+ }
+ 
+ #[cfg(test)]
+ mod tests {

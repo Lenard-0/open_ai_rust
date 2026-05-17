@@ -1,0 +1,12 @@
+src/resources/sse_parser.rs:28:5: replace parse_next_event -> Option<SseEvent> with None
+src/resources/sse_parser.rs:34:35: replace match guard c <= l with true in parse_next_event
+src/resources/sse_parser.rs:34:35: replace match guard c <= l with false in parse_next_event
+src/resources/sse_parser.rs:34:37: replace <= with > in parse_next_event
+src/resources/sse_parser.rs:41:28: replace + with * in parse_next_event
+src/resources/sse_parser.rs:57:22: replace == with != in parse_next_event
+src/resources/sse_parser.rs:58:20: delete ! in parse_next_event
+src/resources/sse_parser.rs:70:17: replace == with != in parse_next_event
+src/resources/sse_parser.rs:78:5: replace strip_trailing_cr -> &str with ""
+src/resources/sse_parser.rs:78:5: replace strip_trailing_cr -> &str with "xyzzy"
+src/resources/sse_parser.rs:82:5: replace strip_one_leading_space -> &str with ""
+src/resources/sse_parser.rs:82:5: replace strip_one_leading_space -> &str with "xyzzy"

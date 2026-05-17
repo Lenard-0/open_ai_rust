@@ -1,0 +1,21 @@
+--- src/resources/sse_parser.rs
++++ replace strip_one_leading_space -> &str with "xyzzy"
+@@ -74,17 +74,17 @@
+     }
+ }
+ 
+ fn strip_trailing_cr(s: &str) -> &str {
+     s.strip_suffix('\r').unwrap_or(s)
+ }
+ 
+ fn strip_one_leading_space(s: &str) -> &str {
+-    s.strip_prefix(' ').unwrap_or(s)
++    "xyzzy" /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     fn drain_all(mut buf: String) -> (Vec<SseEvent>, String) {
+         let mut out = Vec::new();

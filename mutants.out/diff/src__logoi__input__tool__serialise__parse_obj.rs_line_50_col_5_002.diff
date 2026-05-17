@@ -1,0 +1,23 @@
+--- src/logoi/input/tool/serialise/parse_obj.rs
++++ replace parse_fields -> Result<(serde_json::Map<String, Value>, Vec<String>), String> with Ok((Default::default(), vec!["xyzzy".into()]))
+@@ -42,19 +42,10 @@
+     // }
+ 
+     Ok(obj)
+ }
+ 
+ fn parse_fields(
+     fields: &Vec<FunctionParameter>,
+ ) -> Result<(serde_json::Map<String, Value>, Vec<String>), String> {
+-    let mut fields_map = serde_json::Map::new();
+-    let mut required_params = Vec::new();
+-    for param in fields {
+-        match insert_param(&mut fields_map, &mut required_params, param) {
+-            Ok(_) => (),
+-            Err(e) => return Err(e),
+-        };
+-    }
+-
+-    Ok((fields_map, required_params))
++    Ok((Default::default(), vec!["xyzzy".into()])) /* ~ changed by cargo-mutants ~ */
+ }

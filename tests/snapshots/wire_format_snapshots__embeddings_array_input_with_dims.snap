@@ -1,0 +1,14 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&req"
+snapshot_kind: text
+---
+{
+  "model": "text-embedding-3-large",
+  "input": [
+    "foo",
+    "bar"
+  ],
+  "dimensions": 256,
+  "user": "user-42"
+}

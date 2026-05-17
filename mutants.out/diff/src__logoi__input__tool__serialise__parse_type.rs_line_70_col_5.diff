@@ -1,0 +1,31 @@
+--- src/logoi/input/tool/serialise/parse_type.rs
++++ replace parse_array -> Result<(), String> with Ok(())
+@@ -62,27 +62,17 @@
+         EnumValues::Float(_) => Ok("number".to_string()),
+     }
+ }
+ 
+ fn parse_array(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     items: &FunctionType,
+ ) -> Result<(), String> {
+-    param_map.insert("type".to_string(), json!("array".to_string()));
+-    param_map.insert(
+-        "items".to_string(),
+-        serde_json::Value::Object({
+-            let mut items_map = serde_json::Map::new();
+-            insert_type(&mut items_map, items)?;
+-            items_map
+-        }),
+-    );
+-
+-    Ok(())
++    Ok(()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ fn parse_map(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     value: &FunctionType,
+ ) -> Result<(), String> {
+     param_map.insert("type".to_string(), json!("object"));
+     let mut additional = serde_json::Map::new();

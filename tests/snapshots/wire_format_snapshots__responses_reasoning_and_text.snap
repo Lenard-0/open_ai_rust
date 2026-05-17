@@ -1,0 +1,31 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&r"
+snapshot_kind: text
+---
+{
+  "model": "o3-mini",
+  "input": "solve this",
+  "text": {
+    "format": {
+      "name": "answer",
+      "schema": {
+        "properties": {
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "strict": true,
+      "type": "json_schema"
+    }
+  },
+  "reasoning": {
+    "effort": "high",
+    "summary": "detailed"
+  }
+}

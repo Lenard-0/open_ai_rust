@@ -1,0 +1,39 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&r"
+snapshot_kind: text
+---
+{
+  "model": "gpt-4.1-mini",
+  "input": "find me a paper on graphs",
+  "tools": [
+    {
+      "type": "function",
+      "name": "search_papers",
+      "description": "Search Arxiv",
+      "parameters": {
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    {
+      "type": "file_search",
+      "vector_store_ids": [
+        "vs_1"
+      ],
+      "max_num_results": 5
+    },
+    {
+      "type": "web_search_preview",
+      "search_context_size": "medium"
+    }
+  ]
+}

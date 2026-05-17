@@ -1,10 +1,13 @@
-
+// Gated until `open_ai_rust_fn_call_extension` ships v0.3+ macros that emit the new
+// `required: bool` field on `FunctionParameter`. Enable with `--features macro_v2`.
+#![cfg(feature = "macro_v2")]
 
 #[cfg(test)]
 mod tests {
-    use open_ai_rust::logoi::input::tool::{raw_macro::fn_macro::FunctionCallRaw, FunctionCall, FunctionParameter, FunctionType};
+    use open_ai_rust::logoi::input::tool::{
+        raw_macro::fn_macro::FunctionCallRaw, FunctionCall, FunctionParameter, FunctionType,
+    };
     use open_ai_rust_fn_call_extension::function_call;
-
 
     #[function_call("This function turns on or off the light in their room")]
     fn _change_light(turn_on_light: bool, _hex_color: String, _brightness: i64, _pulse_rate: f64) {
@@ -26,7 +29,10 @@ mod tests {
         let converted_function_call = _CHANGE_LIGHT.to_fn_call().unwrap();
 
         assert_eq!(converted_function_call.name, expected_function_call.name);
-        assert_eq!(converted_function_call.description, expected_function_call.description);
+        assert_eq!(
+            converted_function_call.description,
+            expected_function_call.description
+        );
     }
 
     #[test]
@@ -39,27 +45,34 @@ mod tests {
                     name: "turn_on_light".to_string(),
                     _type: FunctionType::Boolean,
                     description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "_hex_color".to_string(),
                     _type: FunctionType::String,
                     description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "_brightness".to_string(),
                     _type: FunctionType::Number,
                     description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "_pulse_rate".to_string(),
                     _type: FunctionType::Number,
                     description: None,
+                    required: true,
                 },
             ],
         };
 
         let converted_function_call = _CHANGE_LIGHT.to_fn_call().unwrap();
 
-        assert_eq!(converted_function_call.parameters, expected_function_call.parameters);
+        assert_eq!(
+            converted_function_call.parameters,
+            expected_function_call.parameters
+        );
     }
 }

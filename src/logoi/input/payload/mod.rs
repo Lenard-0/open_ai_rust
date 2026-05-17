@@ -1,11 +1,13 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::logoi::{message::ChatMessage, models::OpenAiModel};
 
 use super::tool::{FunctionCall, ToolChoice};
 
-pub mod templates;
 pub mod builder;
+pub mod templates;
 
 // Chat
 // Given a list of messages comprising a conversation, the model will return a response.
@@ -24,7 +26,6 @@ pub mod builder;
 
 // Required
 // A list of messages comprising the conversation so far. Example Python code.
-
 
 // Show possible types
 // model
@@ -98,7 +99,6 @@ pub mod builder;
 
 // Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if finish_reason="length", which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
 
-
 // Show properties
 // seed
 // integer or null
@@ -139,7 +139,6 @@ pub mod builder;
 // Defaults to null
 // Options for streaming response. Only set this when you set stream: true.
 
-
 // Show properties
 // temperature
 // number or null
@@ -165,7 +164,6 @@ pub mod builder;
 // Optional
 // A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
 
-
 // Show properties
 // tool_choice
 // string or object
@@ -174,7 +172,6 @@ pub mod builder;
 // Controls which (if any) tool is called by the model. none means the model will not call any tool and instead generates a message. auto means the model can pick between generating a message or calling one or more tools. required means the model must call one or more tools. Specifying a particular tool via {"type": "function", "function": {"name": "my_function"}} forces the model to call that tool.
 
 // none is the default when no tools are present. auto is the default if tools are present.
-
 
 // Show possible types
 // parallel_tool_calls
@@ -201,7 +198,6 @@ pub mod builder;
 
 // none is the default when no functions are present. auto is the default if functions are present.
 
-
 // Show possible types
 // functions
 // Deprecated
@@ -211,7 +207,6 @@ pub mod builder;
 // Deprecated in favor of tools.
 
 // A list of functions the model may generate JSON inputs for.
-
 
 // Show properties
 // Returns
@@ -226,22 +221,34 @@ pub struct ChatPayLoad {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tools: Option<Vec<ToolChoice>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tool_choice: Option<String>,
+    pub tool_choice: Option<ChatToolChoice>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parallel_tool_calls: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency_penalty: Option<f32>,
-    // pub logit_bias: Option<LogitBias>, TODO: add. not urgent tho
+    /// Per-token bias added to logits prior to sampling. Map of token ID (as a string)
+    /// to bias `-100..=100`. `100` effectively forces the token, `-100` bans it.
+    /// See <https://platform.openai.com/docs/api-reference/chat/create#chat-create-logit_bias>.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logit_bias: Option<HashMap<String, i32>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub logprobs: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_logprobs: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tokens: Option<i32>,
+    /// Replacement for `max_tokens` on reasoning models (o1, o3, gpt-5 …).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_completion_tokens: Option<i32>,
+    /// Reasoning effort hint for reasoning models.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort: Option<ReasoningEffort>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub n: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub presence_penalty: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub response_format: Option<ResponseFormatInput>,
+    pub response_format: Option<ResponseFormat>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -251,11 +258,18 @@ pub struct ChatPayLoad {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub stream_options: Option<bool>,
+    pub stream_options: Option<StreamOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
+    /// Arbitrary key/value labels attached to the request (visible in dashboard).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    /// When `true` (default for paying accounts), OpenAI stores the completion for
+    /// later retrieval/evals.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub store: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
 }
@@ -265,10 +279,16 @@ impl ChatPayLoad {
         Self {
             model,
             messages,
+            tools: None,
+            tool_choice: None,
+            parallel_tool_calls: None,
             frequency_penalty: None,
+            logit_bias: None,
             logprobs: None,
             top_logprobs: None,
             max_tokens: None,
+            max_completion_tokens: None,
+            reasoning_effort: None,
             n: None,
             presence_penalty: None,
             response_format: None,
@@ -279,16 +299,145 @@ impl ChatPayLoad {
             stream_options: None,
             temperature: None,
             top_p: None,
-            tools: None,
+            metadata: None,
+            store: None,
             user: None,
-            tool_choice: None,
         }
     }
 }
 
-// Must be one of text or json_object.
+/// Response format — `text`, `json_object`, or strict `json_schema`.
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum ResponseFormatInput {
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ResponseFormat {
+    Text,
     JsonObject,
-    Text
+    JsonSchema { json_schema: JsonSchemaSpec },
 }
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct JsonSchemaSpec {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub schema: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strict: Option<bool>,
+}
+
+impl ResponseFormat {
+    /// Build a strict `json_schema` response format.
+    ///
+    /// ```
+    /// use open_ai_rust::ResponseFormat;
+    /// use serde_json::json;
+    ///
+    /// let rf = ResponseFormat::json_schema(
+    ///     "city",
+    ///     json!({ "type": "object", "properties": { "name": { "type": "string" } } }),
+    /// );
+    /// let v = serde_json::to_value(&rf).unwrap();
+    /// assert_eq!(v["type"], "json_schema");
+    /// assert_eq!(v["json_schema"]["strict"], true);
+    /// ```
+    pub fn json_schema(name: impl Into<String>, schema: serde_json::Value) -> Self {
+        ResponseFormat::JsonSchema {
+            json_schema: JsonSchemaSpec {
+                name: name.into(),
+                description: None,
+                schema,
+                strict: Some(true),
+            },
+        }
+    }
+}
+
+/// Tool-choice directive on a chat completion. Accepts `"auto"`/`"required"`/`"none"`/
+/// strings transparently via `From<&str>` / `From<String>`.
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum ChatToolChoice {
+    /// `"none"` | `"auto"` | `"required"` — serialised as a bare string.
+    Mode(String),
+    /// Force a specific function tool.
+    Function {
+        #[serde(rename = "type")]
+        type_: ChatToolChoiceType,
+        function: ChatToolChoiceFunction,
+    },
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum ChatToolChoiceType {
+    Function,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct ChatToolChoiceFunction {
+    pub name: String,
+}
+
+impl ChatToolChoice {
+    /// `"auto"` — let the model decide whether to call a tool.
+    ///
+    /// ```
+    /// use open_ai_rust::ChatToolChoice;
+    /// assert_eq!(serde_json::to_value(&ChatToolChoice::auto()).unwrap(), "auto");
+    /// ```
+    pub fn auto() -> Self {
+        Self::Mode("auto".into())
+    }
+    /// `"none"` — model must not call a tool.
+    pub fn none() -> Self {
+        Self::Mode("none".into())
+    }
+    /// `"required"` — model must call at least one tool.
+    pub fn required() -> Self {
+        Self::Mode("required".into())
+    }
+    /// Force a specific function-tool by name.
+    ///
+    /// ```
+    /// use open_ai_rust::ChatToolChoice;
+    /// use serde_json::json;
+    /// let tc = ChatToolChoice::function("get_weather");
+    /// assert_eq!(
+    ///     serde_json::to_value(&tc).unwrap(),
+    ///     json!({ "type": "function", "function": { "name": "get_weather" } })
+    /// );
+    /// ```
+    pub fn function(name: impl Into<String>) -> Self {
+        Self::Function {
+            type_: ChatToolChoiceType::Function,
+            function: ChatToolChoiceFunction { name: name.into() },
+        }
+    }
+}
+
+impl From<String> for ChatToolChoice {
+    fn from(s: String) -> Self {
+        ChatToolChoice::Mode(s)
+    }
+}
+impl From<&str> for ChatToolChoice {
+    fn from(s: &str) -> Self {
+        ChatToolChoice::Mode(s.to_string())
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningEffort {
+    Low,
+    Medium,
+    High,
+}
+
+/// `stream_options` per OpenAI spec — the only documented field today is `include_usage`.
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
+pub struct StreamOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_usage: Option<bool>,
+}
+

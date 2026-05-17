@@ -1,0 +1,16 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&v"
+snapshot_kind: text
+---
+{
+  "auto": "auto",
+  "function": {
+    "function": {
+      "name": "submit"
+    },
+    "type": "function"
+  },
+  "none": "none",
+  "required": "required"
+}

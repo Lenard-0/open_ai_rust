@@ -1,0 +1,28 @@
+---
+source: tests/wire_format_snapshots.rs
+expression: "&rf"
+snapshot_kind: text
+---
+{
+  "type": "json_schema",
+  "json_schema": {
+    "name": "city_info",
+    "schema": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "population": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "population"
+      ],
+      "type": "object"
+    },
+    "strict": true
+  }
+}

@@ -1,0 +1,21 @@
+--- src/resources/sse_parser.rs
++++ replace + with - in parse_next_event
+@@ -33,17 +33,17 @@
+         let (idx, sep_len) = match (crlf, lf) {
+             (Some(c), Some(l)) if c <= l => (c, 4),
+             (Some(c), None) => (c, 4),
+             (_, Some(l)) => (l, 2),
+             (None, None) => return None,
+         };
+ 
+         let raw_event = buffer[..idx].to_string();
+-        buffer.drain(..idx + sep_len);
++        buffer.drain(..idx - /* ~ changed by cargo-mutants ~ */ sep_len);
+ 
+         let mut data = String::new();
+         for line in raw_event.split('\n').map(strip_trailing_cr) {
+             if line.is_empty() {
+                 continue;
+             }
+             if line.starts_with(':') {
+                 // Comment line — ignore.

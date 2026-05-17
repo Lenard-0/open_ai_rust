@@ -1,9 +1,9 @@
 [package]
 name = "open_ai_rust"
-version = "0.2.16"
+version = "1.0.0"
 edition = "2021"
 authors = ["Lachy Hislop <lachie.hislop@gmail.com>"]
-description = "Open AI SDK for Rust. To my knowledge, the only fully comprehensive and up-to-date Open AI crate built in and for Rust. Provides both low-level control with high level ergonomics for doing cool things (the whole reason we use Rust in the first place). Is maintained and has been used and tested in products used in production."
+description = "Idiomatic Rust SDK for the OpenAI API: chat, responses, embeddings, audio, images, moderations, files, batches, vector stores, fine-tuning. Builder payloads, typed function-call schemas, streaming, per-request retries/timeouts."
 license = "Apache-2.0"
 repository = "https://github.com/Lenard-0/open_ai_rust"
 homepage = "https://github.com/Lenard-0/open_ai_rust"
@@ -15,10 +15,42 @@ categories = ["api-bindings", "web-programming"]
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.149"
 tokio = { version = "1.49.0", features = ["full"] }
-reqwest = { version = "0.13.1", features = ["json", "multipart", "stream"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "multipart", "stream"] }
 dotenv = "0.15"
-utoipa="5.4.0"
-open_ai_rust_fn_call_extension="0.2.17"
+thiserror = "2"
+futures-core = "0.3"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+bytes = "1"
+async-stream = "0.3"
+utoipa = { version = "5.4.0", optional = true }
+tracing = { version = "0.1", optional = true }
+linkme = { version = "0.3", optional = true }
+open_ai_rust_fn_call_extension = "0.2.17"
+
+[dev-dependencies]
+linkme = "0.3"
+wiremock = "0.6"
+insta = { version = "1", features = ["json"] }
+proptest = "1"
+criterion = { version = "0.5", default-features = false, features = ["cargo_bench_support"] }
+
+[[bench]]
+name = "hot_paths"
+harness = false
+
+[features]
+default = ["rustls-tls", "stream"]
+rustls-tls = ["reqwest/rustls"]
+native-tls = ["reqwest/native-tls"]
+stream = []
+utoipa = ["dep:utoipa"]
+tracing = ["dep:tracing"]
+# Auto-registered tool dispatch via `linkme`. Required for the `#[tool]` attr macro
+# from `open_ai_rust_fn_call_extension`.
+tool_registry = ["dep:linkme"]
+# Enable once `open_ai_rust_fn_call_extension` ships the `required` field in its derive
+# emission.
+macro_v2 = []
 
 [lib]
 name = "open_ai_rust"

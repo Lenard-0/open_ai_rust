@@ -1,0 +1,32 @@
+--- src/logoi/input/tool/serialise/parse_type.rs
++++ replace parse_oneof -> Result<(), String> with Ok(())
+@@ -93,28 +93,10 @@
+     );
+     Ok(())
+ }
+ 
+ fn parse_oneof(
+     param_map: &mut serde_json::Map<String, serde_json::Value>,
+     variants: &[FunctionVariant],
+ ) -> Result<(), String> {
+-    let mut arr: Vec<Value> = Vec::with_capacity(variants.len());
+-    for v in variants {
+-        let mut variant_schema = if v.parameters.is_empty() {
+-            // unit variant → string const equivalent
+-            let mut m = serde_json::Map::new();
+-            m.insert("type".into(), json!("string"));
+-            m.insert("enum".into(), json!([v.name]));
+-            m
+-        } else {
+-            parse_obj(&v.parameters)?
+-        };
+-        variant_schema.insert("title".into(), json!(v.name));
+-        if let Some(desc) = &v.description {
+-            variant_schema.insert("description".into(), json!(desc));
+-        }
+-        arr.push(serde_json::Value::Object(variant_schema));
+-    }
+-    param_map.insert("oneOf".into(), serde_json::Value::Array(arr));
+-    Ok(())
++    Ok(()) /* ~ changed by cargo-mutants ~ */
+ }

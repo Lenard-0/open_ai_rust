@@ -1,0 +1,21 @@
+--- src/resources/sse_parser.rs
++++ replace match guard c <= l with false in parse_next_event
+@@ -26,17 +26,17 @@
+ /// after `data:` is stripped (and only one — `"data:  x"` keeps one leading space).
+ pub(crate) fn parse_next_event(buffer: &mut String) -> Option<SseEvent> {
+     loop {
+         // SSE events end with a blank line. Look for either CR LF CR LF or LF LF; pick
+         // whichever appears earliest in the buffer.
+         let crlf = buffer.find("\r\n\r\n");
+         let lf = buffer.find("\n\n");
+         let (idx, sep_len) = match (crlf, lf) {
+-            (Some(c), Some(l)) if c <= l => (c, 4),
++            (Some(c), Some(l)) if false /* ~ changed by cargo-mutants ~ */ => (c, 4),
+             (Some(c), None) => (c, 4),
+             (_, Some(l)) => (l, 2),
+             (None, None) => return None,
+         };
+ 
+         let raw_event = buffer[..idx].to_string();
+         buffer.drain(..idx + sep_len);
+ 

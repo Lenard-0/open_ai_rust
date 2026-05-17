@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      # `macro_v2` is gated on sister-crate work; skip it until that lands.
+      - run: cargo clippy --all-targets --features tool_registry,tracing,utoipa,azure -- -D warnings
+
+  build:
+    name: build (${{ matrix.os }} / ${{ matrix.toolchain }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [stable]
+        include:
+          # MSRV — Linux only (faster CI).
+          - os: ubuntu-latest
+            toolchain: "1.75"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --all-targets
+      - run: cargo build --all-targets --features tool_registry
+      - run: cargo build --all-targets --features tracing
+      - run: cargo build --all-targets --no-default-features --features rustls-tls,stream
+
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Offline tests only — live API tests need OPENAI_API_KEY and are gated by env
+      # vars; CI skips them by not setting those vars.
+      - name: integration tests
+        shell: bash
+        run: |
+          cargo test --test serde_payload \
+                     --test tool_call_input_parsing \
+                     --test parsing_tool_call_res \
+                     --test ai_msg_res_to_json_tests \
+                     --test wiremock_endpoints \
+                     --test wiremock_more_endpoints \
+                     --test error_paths \
+                     --test wire_format_snapshots \
+                     --test proptest_function_schema \
+                     --test coverage_units \
+                     --test coverage_gaps \
+                     --test client_branches \
+                     --test deprecated_globals
+      - name: tool_registry tests
+        run: cargo test --features tool_registry --test tool_registry
+      - name: lib unit tests (SSE parser etc.)
+        run: cargo test --lib
+      - name: doctests
+        run: cargo test --doc
+
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo doc --no-deps --features tool_registry,tracing,utoipa,azure
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Measure coverage
+        run: |
+          cargo llvm-cov \
+            --features tool_registry,tracing,utoipa,azure \
+            --no-fail-fast \
+            --ignore-filename-regex 'tests/|benches/|examples/' \
+            --summary-only
+      - name: Enforce minimum coverage (region)
+        run: |
+          PCT=$(cargo llvm-cov \
+                  --features tool_registry,tracing,utoipa,azure \
+                  --no-fail-fast \
+                  --ignore-filename-regex 'tests/|benches/|examples/' \
+                  --summary-only 2>&1 | awk '/^TOTAL/ {print $4}' | tr -d '%')
+          echo "Coverage: ${PCT}%"
+          awk -v p="$PCT" 'BEGIN { if (p+0 < 95.0) { print "Coverage " p "% below 95% gate"; exit 1 } }'

@@ -1,21 +1,27 @@
-
+// Gated until `open_ai_rust_fn_call_extension` ships v0.3+ macros that emit the new
+// `required: bool` field on `FunctionParameter`. Enable with `--features macro_v2`.
+#![cfg(feature = "macro_v2")]
 
 #[cfg(test)]
 mod tests {
+    use open_ai_rust::logoi::input::tool::raw_macro::FunctionCallable;
     use open_ai_rust::logoi::input::tool::{FunctionCall, FunctionParameter, FunctionType};
     use open_ai_rust_fn_call_extension::FunctionCall;
-    use open_ai_rust::logoi::input::tool::raw_macro::FunctionCallable;
 
     #[test]
     pub fn can_parse_basic_struct_just_name() {
         #[derive(FunctionCall)]
         struct JustName {}
-        impl JustName { fn new() -> Self { JustName {  }} }
+        impl JustName {
+            fn new() -> Self {
+                JustName {}
+            }
+        }
 
         let expected_fn_call = FunctionCall {
             name: "JustName".to_string(),
             description: None,
-            parameters: vec![]
+            parameters: vec![],
         };
 
         assert_eq!(JustName::new().to_fn_call(), expected_fn_call);
@@ -27,11 +33,17 @@ mod tests {
         struct CreateNpc {
             name: String,
             male: bool,
-            age: i32
+            age: i32,
         }
 
         impl CreateNpc {
-            pub fn new() -> Self { Self { name: String::new(), male: true, age: 0 } }
+            pub fn new() -> Self {
+                Self {
+                    name: String::new(),
+                    male: true,
+                    age: 0,
+                }
+            }
         }
 
         let expected_fn_call = FunctionCall {
@@ -41,19 +53,22 @@ mod tests {
                 FunctionParameter {
                     name: "name".to_string(),
                     _type: FunctionType::String,
-                    description: None
+                    description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "male".to_string(),
                     _type: FunctionType::Boolean,
-                    description: None
+                    description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "age".to_string(),
                     _type: FunctionType::Number,
-                    description: None
+                    description: None,
+                    required: true,
                 },
-            ]
+            ],
         };
         let fn_call = CreateNpc::new().to_fn_call();
         assert_eq!(fn_call, expected_fn_call);
@@ -65,11 +80,17 @@ mod tests {
         struct MakeNotes {
             heading: String,
             notes: Vec<String>,
-            difficulty: u8
+            difficulty: u8,
         }
 
         impl MakeNotes {
-            pub fn for_fn_call() -> Self { Self { heading: "".to_string(), notes: vec!["".to_string()], difficulty: 1 } }
+            pub fn for_fn_call() -> Self {
+                Self {
+                    heading: "".to_string(),
+                    notes: vec!["".to_string()],
+                    difficulty: 1,
+                }
+            }
         }
 
         let expected_fn_call = FunctionCall {
@@ -79,19 +100,22 @@ mod tests {
                 FunctionParameter {
                     name: "heading".to_string(),
                     _type: FunctionType::String,
-                    description: None
+                    description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "notes".to_string(),
                     _type: FunctionType::Array(Box::new(FunctionType::String)),
-                    description: None
+                    description: None,
+                    required: true,
                 },
                 FunctionParameter {
                     name: "difficulty".to_string(),
                     _type: FunctionType::Number,
-                    description: None
+                    description: None,
+                    required: true,
                 },
-            ]
+            ],
         };
 
         assert_eq!(MakeNotes::for_fn_call().to_fn_call(), expected_fn_call);
@@ -101,33 +125,41 @@ mod tests {
     fn test_parse_struct_w_hashmap() {
         #[derive(FunctionCall)]
         struct OuterStruct {
-            inner: InnerStruct
+            inner: InnerStruct,
         }
         impl OuterStruct {
-            fn new() -> Self { Self { inner: InnerStruct::new() }}
+            fn new() -> Self {
+                Self {
+                    inner: InnerStruct::new(),
+                }
+            }
         }
         #[derive(FunctionCall)]
         struct InnerStruct {
-            value: String
+            value: String,
         }
         impl InnerStruct {
-            fn new() -> Self { Self { value: String::new() }}
+            fn new() -> Self {
+                Self {
+                    value: String::new(),
+                }
+            }
         }
 
         let expected_fn_call = FunctionCall {
             name: "OuterStruct".to_string(),
             description: None,
-            parameters: vec![
-                FunctionParameter {
-                    name: "inner".to_string(),
-                    _type: FunctionType::Object(vec![FunctionParameter {
-                        name: "value".to_string(),
-                        _type: FunctionType::String,
-                        description: None
-                    }]),
-                    description: None
-                }
-            ]
+            parameters: vec![FunctionParameter {
+                name: "inner".to_string(),
+                _type: FunctionType::Object(vec![FunctionParameter {
+                    name: "value".to_string(),
+                    _type: FunctionType::String,
+                    description: None,
+                    required: true,
+                }]),
+                description: None,
+                required: true,
+            }],
         };
         assert_eq!(OuterStruct::new().to_fn_call(), expected_fn_call);
     }
@@ -136,33 +168,43 @@ mod tests {
     fn test_parse_struct_w_vec_wrapping_strict() {
         #[derive(FunctionCall)]
         struct OuterStruct {
-            inner: Vec<InnerStruct>
+            inner: Vec<InnerStruct>,
         }
         impl OuterStruct {
-            fn for_fn_call() -> Self { Self { inner: vec![InnerStruct::new()] }}
+            fn for_fn_call() -> Self {
+                Self {
+                    inner: vec![InnerStruct::new()],
+                }
+            }
         }
         #[derive(FunctionCall)]
         struct InnerStruct {
-            value: String
+            value: String,
         }
         impl InnerStruct {
-            fn new() -> Self { Self { value: String::new() }}
+            fn new() -> Self {
+                Self {
+                    value: String::new(),
+                }
+            }
         }
 
         let expected_fn_call = FunctionCall {
             name: "OuterStruct".to_string(),
             description: None,
-            parameters: vec![
-                FunctionParameter {
-                    name: "inner".to_string(),
-                    _type: FunctionType::Array(Box::new(FunctionType::Object(vec![FunctionParameter {
+            parameters: vec![FunctionParameter {
+                name: "inner".to_string(),
+                _type: FunctionType::Array(Box::new(FunctionType::Object(vec![
+                    FunctionParameter {
                         name: "value".to_string(),
                         _type: FunctionType::String,
-                        description: None
-                    }]))),
-                    description: None
-                }
-            ]
+                        description: None,
+                        required: true,
+                    },
+                ]))),
+                description: None,
+                required: true,
+            }],
         };
         assert_eq!(OuterStruct::for_fn_call().to_fn_call(), expected_fn_call);
     }

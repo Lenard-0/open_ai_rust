@@ -1,10 +1,12 @@
-use crate::logoi::{input::tool::{FunctionCall, ToolChoice, ToolType}, message::ChatMessage, models::OpenAiModel};
+use crate::logoi::{
+    input::tool::{FunctionCall, ToolChoice, ToolType},
+    message::ChatMessage,
+    models::OpenAiModel,
+};
 
-use super::ChatPayLoad;
+use super::{ChatPayLoad, ChatToolChoice};
 
-
-/// This is a bunch of shorthand templates since you likely will not want to manually write out every setting,
-/// but still want error handling to make sure you don't miss out on crucial features.
+/// Shorthand templates for common request shapes. Prefer [`crate::PayLoadBuilder`] for full control.
 pub enum PayLoadTemplates {
     Chat(QuickChatTemplate),
     FunctionCall(QuickFunctionCallTemplate),
@@ -18,26 +20,14 @@ impl PayLoadTemplates {
     pub fn to_payload(self) -> ChatPayLoad {
         match self {
             Self::Chat(template) => template.to_payload(),
-            Self::FunctionCall(template) => ChatPayLoad {
-                model: template.model,
-                messages: template.messages,
-                tools: template.tools,
-                tool_choice: Some("auto".to_string()),
-                frequency_penalty: None,
-                logprobs: None,
-                top_logprobs: None,
-                max_tokens: None,
-                n: None,
-                presence_penalty: None,
-                response_format: None,
-                seed: None,
-                service_tier: None,
-                stop: None,
-                stream: None,
-                stream_options: None,
-                temperature: None,
-                top_p: None,
-                user: None,
+            Self::FunctionCall(template) => {
+                let mut payload = ChatPayLoad::new(template.model, template.messages);
+                payload.tools = template.tools;
+                payload.tool_choice = Some(match template.tool_choice {
+                    Some(fc) => ChatToolChoice::function(fc.name),
+                    None => ChatToolChoice::auto(),
+                });
+                payload
             }
         }
     }
@@ -51,50 +41,16 @@ pub struct QuickChatTemplate {
 impl QuickChatTemplate {
     pub fn default(messages: Vec<ChatMessage>) -> Self {
         Self {
-            model: OpenAiModel::GPT4o,
-            messages
+            model: OpenAiModel::GPT4oMini,
+            messages,
         }
     }
 
-    pub fn to_payload(self) -> crate::logoi::input::payload::ChatPayLoad {
-        ChatPayLoad {
-            model: self.model,
-            messages: self.messages,
-            frequency_penalty: None,
-            logprobs: None,
-            top_logprobs: None,
-            max_tokens: None,
-            n: None,
-            presence_penalty: None,
-            response_format: None,
-            seed: None,
-            service_tier: None,
-            stop: None,
-            stream: None,
-            stream_options: None,
-            temperature: None,
-            top_p: None,
-            tools: None,
-            user: None,
-            tool_choice: None,
-        }
+    pub fn to_payload(self) -> ChatPayLoad {
+        ChatPayLoad::new(self.model, self.messages)
     }
 }
 
-// let payload = json!({
-//     "model": MODEL,
-//     "messages": messages,
-//     "tools": processed_functions,
-//     "tool_choice": match tool_choice_name {
-//         Some(tool_choice_name) => json!({
-//             "type": "function",
-//             "function": {
-//                 "name": tool_choice_name
-//             }
-//         }),
-//         None => json!("auto".to_string())
-//     }
-// });
 pub struct QuickFunctionCallTemplate {
     pub model: OpenAiModel,
     pub messages: Vec<ChatMessage>,
@@ -103,16 +59,23 @@ pub struct QuickFunctionCallTemplate {
 }
 
 impl QuickFunctionCallTemplate {
-    pub fn default(messages: Vec<ChatMessage>, functions: Vec<FunctionCall>, tool_choice: Option<FunctionCall>) -> Self {
-        let mut tools: Vec<ToolChoice> = vec![];
-        for f in functions {
-            tools.push(ToolChoice { function: f, _type: ToolType::Function });
-        }
+    pub fn default(
+        messages: Vec<ChatMessage>,
+        functions: Vec<FunctionCall>,
+        tool_choice: Option<FunctionCall>,
+    ) -> Self {
+        let tools: Vec<ToolChoice> = functions
+            .into_iter()
+            .map(|f| ToolChoice {
+                function: f,
+                _type: ToolType::Function,
+            })
+            .collect();
         Self {
-            model: OpenAiModel::GPT4o,
+            model: OpenAiModel::GPT4oMini,
             messages,
             tools: Some(tools),
-            tool_choice
+            tool_choice,
         }
     }
 }

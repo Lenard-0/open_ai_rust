@@ -1,0 +1,21 @@
+--- src/resources/sse_parser.rs
++++ replace == with != in parse_next_event
+@@ -62,17 +62,17 @@
+             }
+             // Other field names (`event`, `id`, `retry`) — ignored. OpenAI doesn't use them.
+         }
+ 
+         if data.is_empty() {
+             // Empty event (e.g. comment-only or all unknown fields) — keep scanning.
+             continue;
+         }
+-        if data == "[DONE]" {
++        if data != /* ~ changed by cargo-mutants ~ */ "[DONE]" {
+             return Some(SseEvent::Done);
+         }
+         return Some(SseEvent::Data(data));
+     }
+ }
+ 
+ fn strip_trailing_cr(s: &str) -> &str {
+     s.strip_suffix('\r').unwrap_or(s)

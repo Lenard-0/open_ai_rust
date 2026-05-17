@@ -2,9 +2,8 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-
-pub mod serialise;
 pub mod raw_macro;
+pub mod serialise;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ToolChoice {
@@ -20,14 +19,26 @@ pub struct FunctionCall {
     pub parameters: Vec<FunctionParameter>,
 }
 
+impl Default for FunctionCall {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FunctionCall {
-    pub fn new() -> Self { FunctionCall { name: "".to_string(), description: None, parameters: vec![] } }
+    pub fn new() -> Self {
+        FunctionCall {
+            name: "".to_string(),
+            description: None,
+            parameters: vec![],
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum ToolType {
-    Function
+    Function,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
@@ -35,6 +46,49 @@ pub struct FunctionParameter {
     pub name: String,
     pub _type: FunctionType,
     pub description: Option<String>,
+    /// Whether this parameter is required. Defaults to `true`.
+    ///
+    /// Note: a parameter is treated as optional at the JSON-schema `required` array level
+    /// when either `required == false` OR the inner `_type` is `FunctionType::Option(_)`.
+    /// Generally prefer setting `required: false` over wrapping in `Option`; the OpenAI
+    /// strict-schema convention is to list optionality in `required`, not via nullability.
+    #[serde(default = "default_required")]
+    pub required: bool,
+}
+
+fn default_required() -> bool {
+    true
+}
+
+impl Default for FunctionParameter {
+    fn default() -> Self {
+        Self {
+            name: String::new(),
+            _type: FunctionType::String,
+            description: None,
+            required: true,
+        }
+    }
+}
+
+impl FunctionParameter {
+    /// Builder-style constructor for a required string parameter; chain `.required(false)` / `.description(...)`.
+    pub fn new(name: impl Into<String>, _type: FunctionType) -> Self {
+        Self {
+            name: name.into(),
+            _type,
+            description: None,
+            required: true,
+        }
+    }
+    pub fn description(mut self, d: impl Into<String>) -> Self {
+        self.description = Some(d.into());
+        self
+    }
+    pub fn required(mut self, v: bool) -> Self {
+        self.required = v;
+        self
+    }
 }
 
 // impl ToTokens for FunctionParameter {
@@ -62,6 +116,22 @@ pub enum FunctionType {
     Null,
     Enum(EnumValues),
     Option(Box<FunctionType>),
+    /// `HashMap<String, V>` / `BTreeMap<String, V>` — emitted as `{ "type": "object",
+    /// "additionalProperties": <V schema> }`.
+    Map(Box<FunctionType>),
+    /// Tagged union from a Rust enum with data variants — emitted as JSON-Schema `oneOf`.
+    OneOf(Vec<FunctionVariant>),
+}
+
+/// One variant of a `OneOf` (JSON-Schema `oneOf`) — corresponds to one variant of a
+/// Rust enum carried by `#[derive(FunctionCall)]`.
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct FunctionVariant {
+    /// Discriminator value (the Rust variant name unless overridden).
+    pub name: String,
+    pub description: Option<String>,
+    /// Parameters carried by this variant (empty for unit variants).
+    pub parameters: Vec<FunctionParameter>,
 }
 
 // impl ToTokens for FunctionType {
@@ -140,20 +210,39 @@ impl Display for FunctionType {
             FunctionType::Array(_type) => write!(f, "array<{}>", _type),
             FunctionType::Object { .. } => write!(f, "object"),
             FunctionType::Null => write!(f, "null"),
-            FunctionType::Enum(values) => {
-                match values {
-                    EnumValues::String(values) => {
-                        write!(f, "enum<{}>", values.join(", "))
-                    },
-                    EnumValues::Int(values) => {
-                        write!(f, "enum<{}>", values.iter().map(|v| v.to_string()).collect::<Vec<String>>().join(", "))
-                    },
-                    EnumValues::Float(values) => {
-                        write!(f, "enum<{}>", values.iter().map(|v| v.to_string()).collect::<Vec<String>>().join(", "))
-                    }
+            FunctionType::Enum(values) => match values {
+                EnumValues::String(values) => {
+                    write!(f, "enum<{}>", values.join(", "))
+                }
+                EnumValues::Int(values) => {
+                    write!(
+                        f,
+                        "enum<{}>",
+                        values
+                            .iter()
+                            .map(|v| v.to_string())
+                            .collect::<Vec<String>>()
+                            .join(", ")
+                    )
+                }
+                EnumValues::Float(values) => {
+                    write!(
+                        f,
+                        "enum<{}>",
+                        values
+                            .iter()
+                            .map(|v| v.to_string())
+                            .collect::<Vec<String>>()
+                            .join(", ")
+                    )
                 }
             },
             FunctionType::Option(value) => write!(f, "Option<{}>", value),
+            FunctionType::Map(value) => write!(f, "map<{}>", value),
+            FunctionType::OneOf(variants) => {
+                let names: Vec<_> = variants.iter().map(|v| v.name.as_str()).collect();
+                write!(f, "oneOf<{}>", names.join("|"))
+            }
         }
     }
 }
