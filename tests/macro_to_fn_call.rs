@@ -1,11 +1,11 @@
-// Gated until `open_ai_rust_fn_call_extension` ships v0.3+ macros that emit the new
-// `required: bool` field on `FunctionParameter`. Enable with `--features macro_v2`.
-#![cfg(feature = "macro_v2")]
+//! End-to-end test: `#[function_call]` from `open_ai_rust_fn_call_extension`
+//! → `FunctionCallRaw` const → `to_fn_call()` → runtime `FunctionCall`.
 
 #[cfg(test)]
 mod tests {
     use open_ai_rust::logoi::input::tool::{
-        raw_macro::fn_macro::FunctionCallRaw, FunctionCall, FunctionParameter, FunctionType,
+        raw_macro::fn_macro::{FunctionCallRaw, FunctionParamRaw},
+        FunctionCall, FunctionParameter, FunctionType,
     };
     use open_ai_rust_fn_call_extension::function_call;
 
@@ -21,7 +21,7 @@ mod tests {
     #[test]
     fn can_correctly_parse_function_definition_name_and_description() {
         let expected_function_call = FunctionCall {
-            name: "change_light".to_string(),
+            name: "_change_light".to_string(),
             description: Some("This function turns on or off the light in their room".to_string()),
             parameters: vec![],
         };
@@ -38,7 +38,7 @@ mod tests {
     #[test]
     fn can_correctly_parse_function_definition_primitive_parameter_types() {
         let expected_function_call = FunctionCall {
-            name: "change_light".to_string(),
+            name: "_change_light".to_string(),
             description: Some("This function turns on or off the light in their room".to_string()),
             parameters: vec![
                 FunctionParameter {

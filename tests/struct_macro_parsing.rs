@@ -1,6 +1,6 @@
-// Gated until `open_ai_rust_fn_call_extension` ships v0.3+ macros that emit the new
-// `required: bool` field on `FunctionParameter`. Enable with `--features macro_v2`.
-#![cfg(feature = "macro_v2")]
+//! End-to-end test: `#[derive(FunctionCall)]` from
+//! `open_ai_rust_fn_call_extension` against the canonical
+//! `FunctionCallable` trait path.
 
 #[cfg(test)]
 mod tests {
@@ -12,41 +12,26 @@ mod tests {
     pub fn can_parse_basic_struct_just_name() {
         #[derive(FunctionCall)]
         struct JustName {}
-        impl JustName {
-            fn new() -> Self {
-                JustName {}
-            }
-        }
 
-        let expected_fn_call = FunctionCall {
+        let expected = FunctionCall {
             name: "JustName".to_string(),
             description: None,
             parameters: vec![],
         };
-
-        assert_eq!(JustName::new().to_fn_call(), expected_fn_call);
+        assert_eq!(JustName::fn_schema(), expected);
     }
 
     #[test]
     pub fn can_parse_simple_struct_primitive_types() {
         #[derive(FunctionCall)]
+        #[allow(dead_code)]
         struct CreateNpc {
             name: String,
             male: bool,
             age: i32,
         }
 
-        impl CreateNpc {
-            pub fn new() -> Self {
-                Self {
-                    name: String::new(),
-                    male: true,
-                    age: 0,
-                }
-            }
-        }
-
-        let expected_fn_call = FunctionCall {
+        let expected = FunctionCall {
             name: "CreateNpc".to_string(),
             description: None,
             parameters: vec![
@@ -70,30 +55,20 @@ mod tests {
                 },
             ],
         };
-        let fn_call = CreateNpc::new().to_fn_call();
-        assert_eq!(fn_call, expected_fn_call);
+        assert_eq!(CreateNpc::fn_schema(), expected);
     }
 
     #[test]
     pub fn can_parse_struct_with_vec_of_primitive() {
         #[derive(FunctionCall)]
+        #[allow(dead_code)]
         struct MakeNotes {
             heading: String,
             notes: Vec<String>,
             difficulty: u8,
         }
 
-        impl MakeNotes {
-            pub fn for_fn_call() -> Self {
-                Self {
-                    heading: "".to_string(),
-                    notes: vec!["".to_string()],
-                    difficulty: 1,
-                }
-            }
-        }
-
-        let expected_fn_call = FunctionCall {
+        let expected = FunctionCall {
             name: "MakeNotes".to_string(),
             description: None,
             parameters: vec![
@@ -117,36 +92,23 @@ mod tests {
                 },
             ],
         };
-
-        assert_eq!(MakeNotes::for_fn_call().to_fn_call(), expected_fn_call);
+        assert_eq!(MakeNotes::fn_schema(), expected);
     }
 
     #[test]
-    fn test_parse_struct_w_hashmap() {
+    fn nested_struct_schema_unwraps_into_object() {
         #[derive(FunctionCall)]
+        #[allow(dead_code)]
         struct OuterStruct {
             inner: InnerStruct,
         }
-        impl OuterStruct {
-            fn new() -> Self {
-                Self {
-                    inner: InnerStruct::new(),
-                }
-            }
-        }
         #[derive(FunctionCall)]
+        #[allow(dead_code)]
         struct InnerStruct {
             value: String,
         }
-        impl InnerStruct {
-            fn new() -> Self {
-                Self {
-                    value: String::new(),
-                }
-            }
-        }
 
-        let expected_fn_call = FunctionCall {
+        let expected = FunctionCall {
             name: "OuterStruct".to_string(),
             description: None,
             parameters: vec![FunctionParameter {
@@ -161,35 +123,23 @@ mod tests {
                 required: true,
             }],
         };
-        assert_eq!(OuterStruct::new().to_fn_call(), expected_fn_call);
+        assert_eq!(OuterStruct::fn_schema(), expected);
     }
 
     #[test]
-    fn test_parse_struct_w_vec_wrapping_strict() {
+    fn vec_of_user_struct_unwraps_into_array_object() {
         #[derive(FunctionCall)]
+        #[allow(dead_code)]
         struct OuterStruct {
             inner: Vec<InnerStruct>,
         }
-        impl OuterStruct {
-            fn for_fn_call() -> Self {
-                Self {
-                    inner: vec![InnerStruct::new()],
-                }
-            }
-        }
         #[derive(FunctionCall)]
+        #[allow(dead_code)]
         struct InnerStruct {
             value: String,
         }
-        impl InnerStruct {
-            fn new() -> Self {
-                Self {
-                    value: String::new(),
-                }
-            }
-        }
 
-        let expected_fn_call = FunctionCall {
+        let expected = FunctionCall {
             name: "OuterStruct".to_string(),
             description: None,
             parameters: vec![FunctionParameter {
@@ -206,6 +156,6 @@ mod tests {
                 required: true,
             }],
         };
-        assert_eq!(OuterStruct::for_fn_call().to_fn_call(), expected_fn_call);
+        assert_eq!(OuterStruct::fn_schema(), expected);
     }
 }

@@ -26,162 +26,96 @@ use open_ai_rust::{
 
 #[test]
 fn fn_callable_string() {
-    assert_eq!("x".to_string().to_fn_type(), FunctionType::String);
     assert_eq!(
         <String as FunctionCallable>::schema_type(),
         FunctionType::String
     );
-    let _ = "x".to_string().to_fn_call(); // exercise new()
 }
 
 #[test]
 fn fn_callable_str_static() {
-    let s: &'static str = "abc";
-    assert_eq!(s.to_fn_type(), FunctionType::String);
     assert_eq!(
         <&'static str as FunctionCallable>::schema_type(),
         FunctionType::String
     );
-    let _ = s.to_fn_call();
 }
 
 #[test]
 fn fn_callable_cow_static_str() {
-    let c: Cow<'static, str> = Cow::Borrowed("abc");
-    assert_eq!(c.to_fn_type(), FunctionType::String);
     assert_eq!(
         <Cow<'static, str> as FunctionCallable>::schema_type(),
         FunctionType::String
     );
-    let _ = c.to_fn_call();
 }
 
 #[test]
 fn fn_callable_bool() {
-    assert_eq!(true.to_fn_type(), FunctionType::Boolean);
     assert_eq!(
         <bool as FunctionCallable>::schema_type(),
         FunctionType::Boolean
     );
-    let _ = false.to_fn_call();
 }
 
 #[test]
 fn fn_callable_every_numeric() {
     macro_rules! cov {
-        ($($t:ty: $v:expr),+ $(,)?) => {
+        ($($t:ty),+ $(,)?) => {
             $({
-                let v: $t = $v;
-                assert_eq!(v.to_fn_type(), FunctionType::Number);
                 assert_eq!(<$t as FunctionCallable>::schema_type(), FunctionType::Number);
-                let _ = v.to_fn_call();
             })+
         }
     }
     cov!(
-        i8: -1, i16: -2, i32: -3, i64: -4, i128: -5, isize: -6,
-        u8: 1, u16: 2, u32: 3, u64: 4, u128: 5, usize: 6,
-        f32: 1.0, f64: 2.0,
+        i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64
     );
 }
 
 #[test]
-fn fn_callable_vec_string_with_elements() {
-    let v = vec!["a".to_string(), "b".to_string()];
-    assert_eq!(
-        v.to_fn_type(),
-        FunctionType::Array(Box::new(FunctionType::String))
-    );
+fn fn_callable_vec() {
     assert_eq!(
         <Vec<String> as FunctionCallable>::schema_type(),
         FunctionType::Array(Box::new(FunctionType::String))
     );
-    let _ = v.to_fn_call();
-}
-
-#[test]
-fn fn_callable_vec_empty_falls_back_to_schema_type() {
-    let v: Vec<i32> = vec![];
     assert_eq!(
-        v.to_fn_type(),
+        <Vec<i32> as FunctionCallable>::schema_type(),
         FunctionType::Array(Box::new(FunctionType::Number))
     );
 }
 
 #[test]
 fn fn_callable_array_fixed_size() {
-    let arr: [bool; 3] = [true, false, true];
-    assert_eq!(
-        arr.to_fn_type(),
-        FunctionType::Array(Box::new(FunctionType::Boolean))
-    );
     assert_eq!(
         <[bool; 3] as FunctionCallable>::schema_type(),
         FunctionType::Array(Box::new(FunctionType::Boolean))
     );
-    let _ = arr.to_fn_call();
-    let empty: [u8; 0] = [];
     assert_eq!(
-        empty.to_fn_type(),
+        <[u8; 0] as FunctionCallable>::schema_type(),
         FunctionType::Array(Box::new(FunctionType::Number))
     );
 }
 
 #[test]
-fn fn_callable_option_some_and_none() {
-    let s: Option<String> = Some("x".into());
-    assert_eq!(
-        s.to_fn_type(),
-        FunctionType::Option(Box::new(FunctionType::String))
-    );
-    let n: Option<String> = None;
-    assert_eq!(
-        n.to_fn_type(),
-        FunctionType::Option(Box::new(FunctionType::String))
-    );
+fn fn_callable_option() {
     assert_eq!(
         <Option<String> as FunctionCallable>::schema_type(),
         FunctionType::Option(Box::new(FunctionType::String))
     );
-    let _ = s.to_fn_call();
 }
 
 #[test]
-fn fn_callable_hashmap_with_and_without_entries() {
-    let mut m: HashMap<String, i32> = HashMap::new();
-    assert_eq!(
-        m.to_fn_type(),
-        FunctionType::Map(Box::new(FunctionType::Number))
-    );
-    m.insert("k".into(), 1);
-    assert_eq!(
-        m.to_fn_type(),
-        FunctionType::Map(Box::new(FunctionType::Number))
-    );
+fn fn_callable_hashmap() {
     assert_eq!(
         <HashMap<String, i32> as FunctionCallable>::schema_type(),
         FunctionType::Map(Box::new(FunctionType::Number))
     );
-    let _ = m.to_fn_call();
 }
 
 #[test]
-fn fn_callable_btreemap_with_and_without_entries() {
-    let mut m: BTreeMap<String, bool> = BTreeMap::new();
-    assert_eq!(
-        m.to_fn_type(),
-        FunctionType::Map(Box::new(FunctionType::Boolean))
-    );
-    m.insert("k".into(), true);
-    assert_eq!(
-        m.to_fn_type(),
-        FunctionType::Map(Box::new(FunctionType::Boolean))
-    );
+fn fn_callable_btreemap() {
     assert_eq!(
         <BTreeMap<String, bool> as FunctionCallable>::schema_type(),
         FunctionType::Map(Box::new(FunctionType::Boolean))
     );
-    let _ = m.to_fn_call();
 }
 
 #[test]
@@ -192,34 +126,13 @@ fn fn_callable_fn_schema_default_panics_on_primitive() {
 
 #[test]
 #[should_panic]
-fn fn_callable_schema_type_default_unreachable_for_primitive_override() {
-    // This proves the default impl is never actually called for primitives — all
-    // primitive impls override `schema_type`. But the default impl itself panics; we
-    // call it via a fake type that doesn't override it.
-    struct Bare;
-    impl FunctionCallable for Bare {
-        fn to_fn_call(&self) -> FunctionCall {
-            FunctionCall::new()
-        }
-        fn to_fn_type(&self) -> FunctionType {
-            FunctionType::Null
-        }
-        // Don't override schema_type / fn_schema — exercise default impls.
-    }
-    let _ = <Bare as FunctionCallable>::schema_type();
-}
-
-#[test]
-#[should_panic]
 fn fn_callable_fn_schema_default_panics_for_user_type_that_forgot_to_override() {
     struct Bare;
     impl FunctionCallable for Bare {
-        fn to_fn_call(&self) -> FunctionCall {
-            FunctionCall::new()
-        }
-        fn to_fn_type(&self) -> FunctionType {
+        fn schema_type() -> FunctionType {
             FunctionType::Null
         }
+        // Don't override fn_schema — exercise the default panic body.
     }
     let _ = <Bare as FunctionCallable>::fn_schema();
 }
@@ -230,16 +143,35 @@ fn fn_callable_fn_schema_default_panics_for_user_type_that_forgot_to_override() 
 
 #[test]
 fn function_call_raw_to_fn_call_happy_path() {
-    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::FunctionCallRaw;
-    let mut params = [""; 100];
-    params[0] = "turn_on_light: bool";
-    params[1] = "name: string";
-    params[2] = "age: i64";
-    params[3] = "weight: f64";
+    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::{
+        FunctionCallRaw, FunctionParamRaw,
+    };
+    const PARAMS: &[FunctionParamRaw<'static>] = &[
+        FunctionParamRaw {
+            name: "turn_on_light",
+            ty: "bool",
+            description: "",
+        },
+        FunctionParamRaw {
+            name: "name",
+            ty: "string",
+            description: "",
+        },
+        FunctionParamRaw {
+            name: "age",
+            ty: "i64",
+            description: "",
+        },
+        FunctionParamRaw {
+            name: "weight",
+            ty: "f64",
+            description: "",
+        },
+    ];
     let raw = FunctionCallRaw {
         name: "change_light",
         description: "Toggle a light",
-        parameters: params,
+        parameters: PARAMS,
     };
     let fc = raw.to_fn_call().unwrap();
     assert_eq!(fc.name, "change_light");
@@ -250,6 +182,8 @@ fn function_call_raw_to_fn_call_happy_path() {
     assert_eq!(fc.parameters[1]._type, FunctionType::String);
     assert_eq!(fc.parameters[2]._type, FunctionType::Number);
     assert_eq!(fc.parameters[3]._type, FunctionType::Number);
+    // All required because none are `Option<_>`.
+    assert!(fc.parameters.iter().all(|p| p.required));
 }
 
 #[test]
@@ -258,7 +192,7 @@ fn function_call_raw_empty_description_becomes_none() {
     let raw = FunctionCallRaw {
         name: "x",
         description: "",
-        parameters: [""; 100],
+        parameters: &[],
     };
     let fc = raw.to_fn_call().unwrap();
     assert!(fc.description.is_none());
@@ -266,32 +200,72 @@ fn function_call_raw_empty_description_becomes_none() {
 
 #[test]
 fn function_call_raw_returns_err_on_unsupported_type() {
-    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::FunctionCallRaw;
-    let mut params = [""; 100];
-    params[0] = "weird: vec<Foo>";
+    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::{
+        FunctionCallRaw, FunctionParamRaw,
+    };
+    const PARAMS: &[FunctionParamRaw<'static>] = &[FunctionParamRaw {
+        name: "weird",
+        ty: "MyCustomStruct",
+        description: "",
+    }];
     let raw = FunctionCallRaw {
         name: "x",
         description: "",
-        parameters: params,
+        parameters: PARAMS,
     };
     let err = raw.to_fn_call().unwrap_err();
-    assert!(err.contains("Not yet supported"));
+    assert!(err.contains("MyCustomStruct"));
 }
 
 #[test]
-fn function_call_raw_skips_params_without_colon() {
-    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::FunctionCallRaw;
-    let mut params = [""; 100];
-    params[0] = "no-colon-here";
-    params[1] = "x: bool";
+fn function_call_raw_option_marks_required_false() {
+    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::{
+        FunctionCallRaw, FunctionParamRaw,
+    };
+    const PARAMS: &[FunctionParamRaw<'static>] = &[
+        FunctionParamRaw {
+            name: "required_one",
+            ty: "i64",
+            description: "",
+        },
+        FunctionParamRaw {
+            name: "optional_one",
+            ty: "Option<String>",
+            description: "",
+        },
+    ];
     let raw = FunctionCallRaw {
         name: "x",
         description: "",
-        parameters: params,
+        parameters: PARAMS,
     };
     let fc = raw.to_fn_call().unwrap();
-    assert_eq!(fc.parameters.len(), 1);
-    assert_eq!(fc.parameters[0].name, "x");
+    assert!(fc.parameters[0].required);
+    assert!(!fc.parameters[1].required);
+    // Option<String> unwraps the inner String type.
+    assert_eq!(
+        fc.parameters[1]._type,
+        FunctionType::Option(Box::new(FunctionType::String))
+    );
+}
+
+#[test]
+fn function_call_raw_description_propagates() {
+    use open_ai_rust::logoi::input::tool::raw_macro::fn_macro::{
+        FunctionCallRaw, FunctionParamRaw,
+    };
+    const PARAMS: &[FunctionParamRaw<'static>] = &[FunctionParamRaw {
+        name: "x",
+        ty: "bool",
+        description: "the x param",
+    }];
+    let raw = FunctionCallRaw {
+        name: "x",
+        description: "",
+        parameters: PARAMS,
+    };
+    let fc = raw.to_fn_call().unwrap();
+    assert_eq!(fc.parameters[0].description.as_deref(), Some("the x param"));
 }
 
 // =============================================================================

@@ -79,6 +79,7 @@ pub use logoi::input::payload::{
     ChatPayLoad, ChatToolChoice, ChatToolChoiceFunction, ChatToolChoiceType, JsonSchemaSpec,
     ReasoningEffort, ResponseFormat, StreamOptions,
 };
+pub use logoi::input::tool::raw_macro::fn_macro::{FunctionCallRaw, FunctionParamRaw};
 pub use logoi::input::tool::raw_macro::FunctionCallable;
 pub use logoi::input::tool::{
     EnumValues, FunctionCall, FunctionParameter, FunctionType, FunctionVariant, ToolChoice,

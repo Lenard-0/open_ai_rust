@@ -1,6 +1,6 @@
 [package]
 name = "open_ai_rust"
-version = "1.0.0"
+version = "1.1.1"
 edition = "2021"
 authors = ["Lachy Hislop <lachie.hislop@gmail.com>"]
 description = "Idiomatic Rust SDK for the OpenAI API: chat, responses, embeddings, audio, images, moderations, files, batches, vector stores, fine-tuning. Builder payloads, typed function-call schemas, streaming, per-request retries/timeouts."
@@ -25,7 +25,7 @@ async-stream = "0.3"
 utoipa = { version = "5.4.0", optional = true }
 tracing = { version = "0.1", optional = true }
 linkme = { version = "0.3", optional = true }
-open_ai_rust_fn_call_extension = "0.2.17"
+open_ai_rust_fn_call_extension = { version = "0.3", default-features = false }
 
 [dev-dependencies]
 linkme = "0.3"
@@ -45,12 +45,13 @@ native-tls = ["reqwest/native-tls"]
 stream = []
 utoipa = ["dep:utoipa"]
 tracing = ["dep:tracing"]
-# Auto-registered tool dispatch via `linkme`. Required for the `#[tool]` attr macro
-# from `open_ai_rust_fn_call_extension`.
-tool_registry = ["dep:linkme"]
-# Enable once `open_ai_rust_fn_call_extension` ships the `required` field in its derive
-# emission.
-macro_v2 = []
+# Auto-registered tool dispatch via `linkme`. Required for the `#[tool]` attr
+# macro from `open_ai_rust_fn_call_extension`. Forwards the matching feature
+# to the macro crate so its `#[tool]` emits a `ToolEntry` registration.
+tool_registry = [
+    "dep:linkme",
+    "open_ai_rust_fn_call_extension/tool_registry",
+]
 
 [lib]
 name = "open_ai_rust"
