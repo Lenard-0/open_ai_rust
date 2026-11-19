@@ -12,6 +12,8 @@ Fixes CI so every job passes. There are no API changes.
 - Rustdoc: removed an intra-doc link from `FunctionCallRaw::to_fn_call` to a private item, which failed `-D warnings`.
 - `cargo fmt` applied across the crate.
 - Added strict-schema and structured-output error tests, bringing coverage back above the 95% gate.
+- Packaging: `cargo-mutants` output (`mutants.out*/`, 76 files) and `.DS_Store` are no longer committed or shipped in the
+  published crate. Both are now listed in `exclude` in `Cargo.toml` and in `.gitignore`.
 
 ### Changed
 - **MSRV is now Rust 1.88.** It's declared as `rust-version` in `Cargo.toml`, and CI checks it. The previously stated

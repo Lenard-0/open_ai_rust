@@ -11,6 +11,8 @@ homepage = "https://github.com/Lenard-0/open_ai_rust"
 documentation = "https://docs.rs/open_ai_rust"
 keywords = ["OpenAI", "API", "Rust", "library", "SDK"]
 categories = ["api-bindings", "web-programming"]
+# Keep cargo-mutants output and OS junk out of the published crate.
+exclude = ["mutants.out*", ".DS_Store"]
 
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }
