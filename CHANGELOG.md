@@ -16,6 +16,8 @@ Fixes CI so every job passes. There are no API changes.
   published crate. Both are now listed in `exclude` in `Cargo.toml` and in `.gitignore`.
 
 ### Changed
+- Requires `open_ai_rust_fn_call_extension` 0.3.1 or later. Its `#[derive(FunctionCall)]` now emits fully qualified
+  paths, so a derived type works with `ResponseFormat::for_type::<T>()` with no extra imports.
 - **MSRV is now Rust 1.88.** It's declared as `rust-version` in `Cargo.toml`, and CI checks it. The previously stated
   1.75 could no longer build the dependency tree, because transitive dependencies of `reqwest` (`idna_adapter`, the
   ICU crates) need edition 2024 and rustc 1.88.
