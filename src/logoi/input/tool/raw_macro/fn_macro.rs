@@ -41,7 +41,7 @@ impl<'a> FunctionCallRaw<'a> {
     ///
     /// # Errors
     /// Returns the original parameter-type string if it doesn't map to a
-    /// supported [`FunctionType`] variant. See [`parse_raw_type`] for the
+    /// supported [`FunctionType`] variant. See the private `parse_raw_type` helper for the
     /// list of accepted spellings.
     pub fn to_fn_call(self) -> Result<FunctionCall, String> {
         let name = self.name.to_string();

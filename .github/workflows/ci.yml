@@ -30,7 +30,7 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       # `macro_v2` is gated on sister-crate work; skip it until that lands.
-      - run: cargo clippy --all-targets --features tool_registry,tracing,utoipa,azure -- -D warnings
+      - run: cargo clippy --all-targets --features tool_registry,tracing,utoipa -- -D warnings
 
   build:
     name: build (${{ matrix.os }} / ${{ matrix.toolchain }})
@@ -41,9 +41,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         toolchain: [stable]
         include:
-          # MSRV — Linux only (faster CI).
+          # MSRV — Linux only (faster CI). Keep in sync with `rust-version` in Cargo.toml.
           - os: ubuntu-latest
-            toolchain: "1.75"
+            toolchain: "1.88"
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
@@ -69,21 +69,8 @@ jobs:
       # Offline tests only — live API tests need OPENAI_API_KEY and are gated by env
       # vars; CI skips them by not setting those vars.
       - name: integration tests
-        shell: bash
-        run: |
-          cargo test --test serde_payload \
-                     --test tool_call_input_parsing \
-                     --test parsing_tool_call_res \
-                     --test ai_msg_res_to_json_tests \
-                     --test wiremock_endpoints \
-                     --test wiremock_more_endpoints \
-                     --test error_paths \
-                     --test wire_format_snapshots \
-                     --test proptest_function_schema \
-                     --test coverage_units \
-                     --test coverage_gaps \
-                     --test client_branches \
-                     --test deprecated_globals
+        # Every file in tests/; live API tests are `#[ignore]`d so they don't run here.
+        run: cargo test --tests
       - name: tool_registry tests
         run: cargo test --features tool_registry --test tool_registry
       - name: lib unit tests (SSE parser etc.)
@@ -100,7 +87,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo doc --no-deps --features tool_registry,tracing,utoipa,azure
+      - run: cargo doc --no-deps --features tool_registry,tracing,utoipa
 
   coverage:
     name: coverage
@@ -115,14 +102,14 @@ jobs:
       - name: Measure coverage
         run: |
           cargo llvm-cov \
-            --features tool_registry,tracing,utoipa,azure \
+            --features tool_registry,tracing,utoipa \
             --no-fail-fast \
             --ignore-filename-regex 'tests/|benches/|examples/' \
             --summary-only
       - name: Enforce minimum coverage (region)
         run: |
           PCT=$(cargo llvm-cov \
-                  --features tool_registry,tracing,utoipa,azure \
+                  --features tool_registry,tracing,utoipa \
                   --no-fail-fast \
                   --ignore-filename-regex 'tests/|benches/|examples/' \
                   --summary-only 2>&1 | awk '/^TOTAL/ {print $4}' | tr -d '%')
