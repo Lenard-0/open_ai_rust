@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::logoi::{message::ChatMessage, models::OpenAiModel};
 
+use super::tool::raw_macro::FunctionCallable;
+use super::tool::serialise::strict::StrictSchemaError;
 use super::tool::{FunctionCall, ToolChoice};
 
 pub mod builder;
@@ -350,6 +352,50 @@ impl ResponseFormat {
             },
         }
     }
+
+    /// Build a strict `json_schema` response format from the same [`FunctionCall`] you would
+    /// pass as a tool. Name and description carry over, and the schema is generated with
+    /// [`FunctionCall::to_strict_json_schema`] (all properties required, optional ones nullable,
+    /// `additionalProperties: false`).
+    ///
+    /// ```
+    /// use open_ai_rust::{FunctionCall, FunctionParameter, FunctionType, ResponseFormat};
+    ///
+    /// let quiz = FunctionCall {
+    ///     name: "quiz".into(),
+    ///     description: Some("A quiz".into()),
+    ///     parameters: vec![FunctionParameter::new("question", FunctionType::String)],
+    /// };
+    /// let v = serde_json::to_value(ResponseFormat::from_function(&quiz).unwrap()).unwrap();
+    /// assert_eq!(v["type"], "json_schema");
+    /// assert_eq!(v["json_schema"]["name"], "quiz");
+    /// assert_eq!(v["json_schema"]["strict"], true);
+    /// assert_eq!(v["json_schema"]["schema"]["additionalProperties"], false);
+    /// ```
+    pub fn from_function(f: &FunctionCall) -> Result<Self, StrictSchemaError> {
+        Ok(ResponseFormat::JsonSchema {
+            json_schema: JsonSchemaSpec {
+                name: f.name.clone(),
+                description: f.description.clone(),
+                schema: f.to_strict_json_schema()?,
+                strict: Some(true),
+            },
+        })
+    }
+
+    /// [`Self::from_function`] for a `#[derive(FunctionCall)]` type, via
+    /// [`FunctionCallable::fn_schema`].
+    pub fn for_type<T: FunctionCallable>() -> Result<Self, StrictSchemaError> {
+        Self::from_function(&T::fn_schema())
+    }
+
+    /// Set `json_schema.description`. No-op on `Text` / `JsonObject`.
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        if let ResponseFormat::JsonSchema { json_schema } = &mut self {
+            json_schema.description = Some(description.into());
+        }
+        self
+    }
 }
 
 /// Tool-choice directive on a chat completion. Accepts `"auto"`/`"required"`/`"none"`/
@@ -426,12 +472,21 @@ impl From<&str> for ChatToolChoice {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, Copy)]
+/// `reasoning_effort` for reasoning models. Serialised as `"low"` / `"medium"` / `"high"` /
+/// `"xhigh"`.
+///
+/// ```
+/// use open_ai_rust::ReasoningEffort;
+/// assert_eq!(serde_json::to_value(ReasoningEffort::XHigh).unwrap(), "xhigh");
+/// ```
+#[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum ReasoningEffort {
     Low,
     Medium,
     High,
+    /// Extra-high effort (`"xhigh"`). Only accepted by models that support it.
+    XHigh,
 }
 
 /// `stream_options` per OpenAI spec — the only documented field today is `include_usage`.
