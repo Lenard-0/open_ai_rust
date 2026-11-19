@@ -4,6 +4,8 @@ use serde_json::{json, Value};
 use super::message::ChatMessage;
 
 pub mod stream;
+pub mod structured;
+pub use structured::StructuredOutputError;
 pub use stream::{AssistantDelta, ChatCompletionChunk, ChunkChoice, FunctionDelta, ToolCallDelta};
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

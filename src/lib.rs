@@ -81,6 +81,7 @@ pub use logoi::input::payload::{
 };
 pub use logoi::input::tool::raw_macro::fn_macro::{FunctionCallRaw, FunctionParamRaw};
 pub use logoi::input::tool::raw_macro::FunctionCallable;
+pub use logoi::input::tool::serialise::strict::StrictSchemaError;
 pub use logoi::input::tool::{
     EnumValues, FunctionCall, FunctionParameter, FunctionType, FunctionVariant, ToolChoice,
     ToolType,
@@ -92,7 +93,7 @@ pub use logoi::message::{
 pub use logoi::models::OpenAiModel;
 pub use logoi::output::{
     AiMsgResponse, AiResponseMessage, AssistantDelta, ChatCompletionChunk, Choice, ChunkChoice,
-    CompletionTokensDetails, FunctionCallRes, FunctionDelta, PromptTokensDetails, ToolCallDelta,
+    CompletionTokensDetails, FunctionCallRes, StructuredOutputError, FunctionDelta, PromptTokensDetails, ToolCallDelta,
     ToolCallRes, Usage,
 };
 pub use resources::chat_stream_ext::{collect_chat_stream, CollectedChatStream, CollectedToolCall};

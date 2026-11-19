@@ -312,3 +312,45 @@ use open_ai_rust::{
 - `requests::audio::stt` module (entirely commented out in 0.2; superseded by `client.audio().transcriptions()`).
 
 Nothing else has been deleted — everything else is `#[deprecated]` so a clean upgrade is a warning-fix exercise, not a rewrite.
+
+---
+
+# Moving function-call "structured output" callers to `response_format` (1.2)
+
+Reasoning deployments on Azure reject function tools on `/chat/completions` while `reasoning_effort` is in effect.
+If you used one tool + `tool_choice: "required"` just to get JSON back, switch to structured outputs. You can keep
+the same `FunctionCall` (or `#[derive(FunctionCall)]` type) as the schema source.
+
+### Before
+```rust
+let payload = PayLoadBuilder::new(OpenAiModel::GPT4o)
+    .messages(msgs)
+    .tools(vec![quiz_fn.clone()])
+    .tool_choice("required")
+    .build();
+let args = client.chat().create(payload).await?.get_first_tool_call_args()?;
+```
+
+### After
+```rust
+let payload = PayLoadBuilder::new(OpenAiModel::Custom(deployment))
+    .messages(msgs)
+    .response_format(ResponseFormat::from_function(&quiz_fn)?) // or ResponseFormat::for_type::<Quiz>()?
+    .reasoning_effort(ReasoningEffort::Medium)
+    .max_completion_tokens(8000)
+    .build();
+let quiz: Quiz = client.chat().create(payload).await?.parse_structured()?;
+```
+
+Notes:
+- In strict mode, optional fields come back as `null` rather than missing. Model them as `Option<T>` in your serde type.
+- Don't set `temperature` / `top_p` / `logprobs` / `top_logprobs`, because reasoning models reject them.
+  Unset fields are not serialised.
+- `HashMap` / `BTreeMap` fields can't be used in strict mode (`StrictSchemaError::UnsupportedMap`).
+- Azure v1 endpoint (deployment in `model`, no `api-version`, Bearer auth):
+  ```rust
+  let client = Client::builder()
+      .api_key(key)
+      .base_url(format!("{endpoint}/openai/v1"))
+      .build()?;
+  ```

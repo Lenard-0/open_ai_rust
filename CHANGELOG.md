@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.2.0 — unreleased
+
+Reasoning-model and structured-output support for Chat Completions, so you can move off the
+"single function tool + `tool_choice: required`" pattern. Azure rejects that pattern on reasoning
+deployments (`Function tools with reasoning_effort are not supported ... in /v1/chat/completions`).
+
+### Added
+- `ReasoningEffort::XHigh` → `"reasoning_effort": "xhigh"`.
+- `ResponseFormat::from_function(&FunctionCall)` and `ResponseFormat::for_type::<T: FunctionCallable>()`: build a strict
+  `json_schema` response format from the same schema source used for function tools.
+- `FunctionCall::to_strict_json_schema()`: strict-mode schema with `additionalProperties: false` on every object and
+  every property in `required`. Optional params (`required: false` or `FunctionType::Option`) become nullable,
+  and `OneOf` is emitted as `anyOf`. Returns `StrictSchemaError::UnsupportedMap` for `FunctionType::Map`, which
+  strict mode cannot express.
+- `ResponseFormat::with_description(..)` sets `json_schema.description`.
+- `AiMsgResponse::structured_content()`, `structured_json()` and `parse_structured::<T>()` read
+  `choices[0].message.content`. They return a typed `StructuredOutputError` (`Refusal`, `Truncated` for
+  `finish_reason: "length"`, `ContentFilter`, `EmptyContent`, `InvalidJson`, `NoChoices`).
+- `ReasoningEffort` now derives `PartialEq` and `Eq`.
+- Tests: `tests/reasoning_structured.rs` covers wire format and parsing. `tests/live_azure_structured.rs` is an ignored
+  live check against an Azure v1 endpoint (`AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`,
+  `AZURE_OPENAI_CHAT_DEPLOYMENT`).
+
+### Already available since 1.0 (unchanged, listed here for migrators)
+- `response_format` `text` / `json_object` / `json_schema { name, description?, strict, schema }`.
+- `max_completion_tokens` (use it for reasoning models; `max_tokens` is kept for older models).
+- `usage.completion_tokens_details.reasoning_tokens` and `usage.prompt_tokens_details.cached_tokens` (both detail
+  objects are `Option`, so responses that omit them still parse).
+- `temperature`, `top_p`, `logprobs`, `top_logprobs` and every other optional field are omitted from the request
+  when unset, including in `PayLoadTemplates`.
+
+### Compatibility note
+- Adding the `ReasoningEffort::XHigh` variant breaks downstream code that does an exhaustive `match` on
+  `ReasoningEffort` with no wildcard arm. Add a `_ =>` (or `XHigh`) arm. Nothing else changed in a breaking way:
+  no public struct gained fields, and the function-calling API is untouched.
+
 ## 1.0.0 — unreleased
 
 First stable release. A near-total rewrite of the public API: a real `Client` type, every documented OpenAI endpoint covered, streaming, typed errors, multi-modal chat content, the new Responses API, and an opt-in tool-dispatch registry. **The pre-1.0 global-state free functions and helpers have been removed outright.**

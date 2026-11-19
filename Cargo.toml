@@ -1,6 +1,6 @@
 [package]
 name = "open_ai_rust"
-version = "1.1.1"
+version = "1.2.0"
 edition = "2021"
 authors = ["Lachy Hislop <lachie.hislop@gmail.com>"]
 description = "Idiomatic Rust SDK for the OpenAI API: chat, responses, embeddings, audio, images, moderations, files, batches, vector stores, fine-tuning. Builder payloads, typed function-call schemas, streaming, per-request retries/timeouts."
