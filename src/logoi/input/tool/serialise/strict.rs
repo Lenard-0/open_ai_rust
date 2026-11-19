@@ -69,10 +69,10 @@ fn strict_obj(
         if !p.required && !matches!(p._type, FunctionType::Option(_)) {
             schema = make_nullable(schema);
         }
-        if let (Some(desc), Value::Object(m)) = (&p.description, &mut schema) {
-            m.insert("description".into(), json!(desc));
+        if let Some(desc) = &p.description {
+            schema.insert("description".into(), json!(desc));
         }
-        properties.insert(p.name.clone(), schema);
+        properties.insert(p.name.clone(), Value::Object(schema));
         required.push(json!(p.name));
     }
     let mut out = Map::new();
@@ -83,21 +83,35 @@ fn strict_obj(
     Ok(out)
 }
 
-fn strict_type(t: &FunctionType, path: &str) -> Result<Value, StrictSchemaError> {
+fn typed(t: &str) -> Map<String, Value> {
+    let mut m = Map::new();
+    m.insert("type".into(), json!(t));
+    m
+}
+
+fn strict_type(t: &FunctionType, path: &str) -> Result<Map<String, Value>, StrictSchemaError> {
     Ok(match t {
-        FunctionType::String => json!({ "type": "string" }),
-        FunctionType::Number => json!({ "type": "number" }),
-        FunctionType::Boolean => json!({ "type": "boolean" }),
-        FunctionType::Null => json!({ "type": "null" }),
+        FunctionType::String => typed("string"),
+        FunctionType::Number => typed("number"),
+        FunctionType::Boolean => typed("boolean"),
+        FunctionType::Null => typed("null"),
         FunctionType::Option(inner) => make_nullable(strict_type(inner, path)?),
-        FunctionType::Enum(values) => match values {
-            EnumValues::String(v) => json!({ "type": "string", "enum": v }),
-            EnumValues::Int(v) => json!({ "type": "number", "enum": v }),
-            EnumValues::Float(v) => json!({ "type": "number", "enum": v }),
-        },
-        FunctionType::Object(params) => Value::Object(strict_obj(params, path)?),
+        FunctionType::Enum(values) => {
+            let (ty, vals) = match values {
+                EnumValues::String(v) => ("string", json!(v)),
+                EnumValues::Int(v) => ("number", json!(v)),
+                EnumValues::Float(v) => ("number", json!(v)),
+            };
+            let mut m = typed(ty);
+            m.insert("enum".into(), vals);
+            m
+        }
+        FunctionType::Object(params) => strict_obj(params, path)?,
         FunctionType::Array(items) => {
-            json!({ "type": "array", "items": strict_type(items, &format!("{path}[]"))? })
+            let mut m = typed("array");
+            let items = strict_type(items, &format!("{path}[]"))?;
+            m.insert("items".into(), Value::Object(items));
+            m
         }
         FunctionType::Map(_) => {
             return Err(StrictSchemaError::UnsupportedMap {
@@ -108,8 +122,7 @@ fn strict_type(t: &FunctionType, path: &str) -> Result<Value, StrictSchemaError>
             let mut any_of = Vec::with_capacity(variants.len());
             for v in variants {
                 let mut schema = if v.parameters.is_empty() {
-                    let mut m = Map::new();
-                    m.insert("type".into(), json!("string"));
+                    let mut m = typed("string");
                     m.insert("enum".into(), json!([v.name]));
                     m
                 } else {
@@ -121,39 +134,43 @@ fn strict_type(t: &FunctionType, path: &str) -> Result<Value, StrictSchemaError>
                 }
                 any_of.push(Value::Object(schema));
             }
-            json!({ "anyOf": any_of })
+            let mut m = Map::new();
+            m.insert("anyOf".into(), Value::Array(any_of));
+            m
         }
     })
 }
 
-/// Allow `null` in addition to whatever `schema` already accepts.
-fn make_nullable(schema: Value) -> Value {
-    let Value::Object(mut m) = schema else {
-        return schema;
-    };
+/// Allow `null` in addition to whatever `schema` already accepts. Every schema built by
+/// [`strict_type`] has either `anyOf` or `type`.
+fn make_nullable(mut m: Map<String, Value>) -> Map<String, Value> {
+    let null = json!({ "type": "null" });
     if let Some(Value::Array(any_of)) = m.get_mut("anyOf") {
-        if !any_of.iter().any(|s| s == &json!({ "type": "null" })) {
-            any_of.push(json!({ "type": "null" }));
+        if !any_of.contains(&null) {
+            any_of.push(null);
         }
-        return Value::Object(m);
+        return m;
     }
-    match m.get("type").cloned() {
-        Some(Value::String(t)) if t == "null" => {}
-        Some(Value::String(t)) => {
-            m.insert("type".into(), json!([t, "null"]));
-        }
-        Some(Value::Array(mut ts)) => {
-            if !ts.contains(&json!("null")) {
-                ts.push(json!("null"));
-            }
-            m.insert("type".into(), Value::Array(ts));
-        }
-        _ => return json!({ "anyOf": [Value::Object(m), { "type": "null" }] }),
+    let mut types = match m.remove("type") {
+        Some(Value::Array(ts)) => ts,
+        Some(t) => vec![t],
+        None => vec![],
+    };
+    if !types.contains(&json!("null")) {
+        types.push(json!("null"));
     }
+    m.insert(
+        "type".into(),
+        if types.len() == 1 {
+            types.remove(0)
+        } else {
+            Value::Array(types)
+        },
+    );
     if let Some(Value::Array(values)) = m.get_mut("enum") {
         if !values.contains(&Value::Null) {
             values.push(Value::Null);
         }
     }
-    Value::Object(m)
+    m
 }

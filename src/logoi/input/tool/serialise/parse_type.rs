@@ -4,7 +4,10 @@ use crate::logoi::input::tool::{EnumValues, FunctionType, FunctionVariant};
 
 use super::parse_obj::{insert_obj_into_param_map, parse_obj};
 
-pub fn insert_type(param_map: &mut serde_json::Map<String, serde_json::Value>, _type: &FunctionType) {
+pub fn insert_type(
+    param_map: &mut serde_json::Map<String, serde_json::Value>,
+    _type: &FunctionType,
+) {
     match _type {
         FunctionType::Option(_type) => insert_type(param_map, _type.as_ref()),
         FunctionType::Enum(values) => insert_enum_type(param_map, values),

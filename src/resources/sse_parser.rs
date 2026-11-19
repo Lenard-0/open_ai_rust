@@ -351,7 +351,10 @@ mod tests {
         // the `None => (line, "")` arm fires → field is "weird", value is "". Since
         // field != "data", the line is ignored, leaving only the proper data line.
         let mut buf = "weird\ndata: real\n\n".to_string();
-        assert_eq!(parse_next_event(&mut buf), Some(SseEvent::Data("real".into())));
+        assert_eq!(
+            parse_next_event(&mut buf),
+            Some(SseEvent::Data("real".into()))
+        );
     }
 
     #[test]

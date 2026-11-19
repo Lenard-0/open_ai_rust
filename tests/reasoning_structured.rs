@@ -497,3 +497,97 @@ fn parse_structured_empty_and_filtered() {
         Err(StructuredOutputError::NoChoices)
     ));
 }
+
+#[test]
+fn strict_schema_scalar_and_enum_variants() {
+    let f = FunctionCall {
+        name: "s".into(),
+        description: None,
+        parameters: vec![
+            FunctionParameter::new("flag", FunctionType::Boolean),
+            FunctionParameter::new("nothing", FunctionType::Null).required(false),
+            FunctionParameter::new("level", FunctionType::Enum(EnumValues::Int(vec![1, 2])))
+                .required(false),
+            FunctionParameter::new("ratio", FunctionType::Enum(EnumValues::Float(vec![0.5]))),
+            FunctionParameter::new(
+                "maybe_maybe",
+                FunctionType::Option(Box::new(FunctionType::Option(Box::new(
+                    FunctionType::String,
+                )))),
+            ),
+            FunctionParameter::new(
+                "tags",
+                FunctionType::Array(Box::new(FunctionType::Option(Box::new(
+                    FunctionType::String,
+                )))),
+            ),
+        ],
+    };
+    let p = &f.to_strict_json_schema().unwrap()["properties"];
+    assert_eq!(p["flag"], json!({ "type": "boolean" }));
+    assert_eq!(p["nothing"], json!({ "type": "null" }));
+    assert_eq!(
+        p["level"],
+        json!({ "type": ["number", "null"], "enum": [1, 2, null] })
+    );
+    assert_eq!(p["ratio"], json!({ "type": "number", "enum": [0.5] }));
+    assert_eq!(p["maybe_maybe"], json!({ "type": ["string", "null"] }));
+    assert_eq!(
+        p["tags"],
+        json!({ "type": "array", "items": { "type": ["string", "null"] } })
+    );
+}
+
+#[test]
+fn strict_schema_oneof_descriptions_and_double_nullable() {
+    let variants = vec![FunctionVariant {
+        name: "A".into(),
+        description: Some("variant a".into()),
+        parameters: vec![],
+    }];
+    let f = FunctionCall {
+        name: "o".into(),
+        description: None,
+        parameters: vec![FunctionParameter::new(
+            "v",
+            FunctionType::Option(Box::new(FunctionType::Option(Box::new(
+                FunctionType::OneOf(variants),
+            )))),
+        )],
+    };
+    assert_eq!(
+        f.to_strict_json_schema().unwrap()["properties"]["v"],
+        json!({ "anyOf": [
+            { "type": "string", "enum": ["A"], "title": "A", "description": "variant a" },
+            { "type": "null" }
+        ]})
+    );
+}
+
+#[test]
+fn error_display_and_string_conversion() {
+    let e = StrictSchemaError::UnsupportedMap { path: "$.m".into() };
+    assert!(e.to_string().contains("$.m"));
+
+    let resp = response(
+        json!({ "role": "assistant", "content": null, "refusal": "no" }),
+        "stop",
+        basic_usage(),
+    );
+    let s: String = resp.structured_json().unwrap_err().into();
+    assert_eq!(s, "structured output: model refused: no");
+    for (msg, fr) in [
+        (json!({ "role": "assistant", "content": "{" }), "length"),
+        (
+            json!({ "role": "assistant", "content": null }),
+            "content_filter",
+        ),
+        (json!({ "role": "assistant", "content": " " }), "stop"),
+        (json!({ "role": "assistant", "content": "x" }), "stop"),
+    ] {
+        let err = response(msg, fr, basic_usage())
+            .structured_json()
+            .unwrap_err();
+        assert!(err.to_string().starts_with("structured output:"), "{err}");
+    }
+}

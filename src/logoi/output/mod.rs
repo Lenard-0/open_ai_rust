@@ -5,8 +5,8 @@ use super::message::ChatMessage;
 
 pub mod stream;
 pub mod structured;
-pub use structured::StructuredOutputError;
 pub use stream::{AssistantDelta, ChatCompletionChunk, ChunkChoice, FunctionDelta, ToolCallDelta};
+pub use structured::StructuredOutputError;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct AiMsgResponse {
@@ -41,7 +41,7 @@ impl AiMsgResponse {
                             function: crate::logoi::message::ToolCallFunction {
                                 name: tc.function.name.clone(),
                                 // `Value::to_string` is infallible.
-                            arguments: tc.function.arguments.to_string(),
+                                arguments: tc.function.arguments.to_string(),
                             },
                         })
                         .collect();

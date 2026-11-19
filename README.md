@@ -9,7 +9,7 @@ A comprehensive, idiomatic Rust SDK for the OpenAI API.
 
 Mirrors the official OpenAI SDK's namespacing — `client.chat().create(...)`, `client.responses().create(...)`, `client.embeddings().create(...)` — while keeping a few Rust-flavoured ergonomics that the official clients lack: typed function-call schemas derived from your structs, builder-pattern payloads, retry / timeout / idempotency-key configuration per request, and `Result<T, OpenAiError>` everywhere.
 
-- **MSRV:** Rust 1.75
+- **MSRV:** Rust 1.88
 - **Async runtime:** `tokio`
 - **HTTP:** `reqwest` (default `rustls`, opt-in `native-tls`)
 - **License:** Apache-2.0

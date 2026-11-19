@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.1
+
+Fixes CI so every job passes. There are no API changes.
+
+### Fixed
+- CI: removed the non-existent `azure` cargo feature from the clippy, docs and coverage jobs. Azure needs no feature
+  flag.
+- CI: the test job runs `cargo test --tests` instead of a hand-maintained list that still named the
+  `deprecated_globals` test, which was removed in 1.0. Every integration test now runs, including `reasoning_structured`.
+- Rustdoc: removed an intra-doc link from `FunctionCallRaw::to_fn_call` to a private item, which failed `-D warnings`.
+- `cargo fmt` applied across the crate.
+- Added strict-schema and structured-output error tests, bringing coverage back above the 95% gate.
+
+### Changed
+- **MSRV is now Rust 1.88.** It's declared as `rust-version` in `Cargo.toml`, and CI checks it. The previously stated
+  1.75 could no longer build the dependency tree, because transitive dependencies of `reqwest` (`idna_adapter`, the
+  ICU crates) need edition 2024 and rustc 1.88.
+- Internal: the strict-schema builder now works on JSON maps directly. Its output is unchanged.
+
 ## 1.2.0 — unreleased
 
 Reasoning-model and structured-output support for Chat Completions, so you can move off the

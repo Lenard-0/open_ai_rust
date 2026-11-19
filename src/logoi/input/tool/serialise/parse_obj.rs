@@ -35,9 +35,7 @@ pub fn parse_obj(obj: &Vec<FunctionParameter>) -> serde_json::Map<String, Value>
     out
 }
 
-fn parse_fields(
-    fields: &Vec<FunctionParameter>,
-) -> (serde_json::Map<String, Value>, Vec<String>) {
+fn parse_fields(fields: &Vec<FunctionParameter>) -> (serde_json::Map<String, Value>, Vec<String>) {
     let mut fields_map = serde_json::Map::new();
     let mut required_params = Vec::new();
     for param in fields {

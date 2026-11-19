@@ -22,8 +22,5 @@ pub fn insert_param(
         );
     }
 
-    params_map.insert(
-        param.name.clone(),
-        serde_json::Value::Object(param_map),
-    );
+    params_map.insert(param.name.clone(), serde_json::Value::Object(param_map));
 }

@@ -93,7 +93,7 @@ pub use logoi::message::{
 pub use logoi::models::OpenAiModel;
 pub use logoi::output::{
     AiMsgResponse, AiResponseMessage, AssistantDelta, ChatCompletionChunk, Choice, ChunkChoice,
-    CompletionTokensDetails, FunctionCallRes, StructuredOutputError, FunctionDelta, PromptTokensDetails, ToolCallDelta,
-    ToolCallRes, Usage,
+    CompletionTokensDetails, FunctionCallRes, FunctionDelta, PromptTokensDetails,
+    StructuredOutputError, ToolCallDelta, ToolCallRes, Usage,
 };
 pub use resources::chat_stream_ext::{collect_chat_stream, CollectedChatStream, CollectedToolCall};
