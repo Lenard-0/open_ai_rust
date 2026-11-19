@@ -12,8 +12,12 @@ Fixes CI so every job passes. There are no API changes.
 - Rustdoc: removed an intra-doc link from `FunctionCallRaw::to_fn_call` to a private item, which failed `-D warnings`.
 - `cargo fmt` applied across the crate.
 - Added strict-schema and structured-output error tests, bringing coverage back above the 95% gate.
+- Packaging: `cargo-mutants` output (`mutants.out*/`, 76 files) and `.DS_Store` are no longer committed or shipped in the
+  published crate. Both are now listed in `exclude` in `Cargo.toml` and in `.gitignore`.
 
 ### Changed
+- Requires `open_ai_rust_fn_call_extension` 0.3.1 or later. Its `#[derive(FunctionCall)]` now emits fully qualified
+  paths, so a derived type works with `ResponseFormat::for_type::<T>()` with no extra imports.
 - **MSRV is now Rust 1.88.** It's declared as `rust-version` in `Cargo.toml`, and CI checks it. The previously stated
   1.75 could no longer build the dependency tree, because transitive dependencies of `reqwest` (`idna_adapter`, the
   ICU crates) need edition 2024 and rustc 1.88.

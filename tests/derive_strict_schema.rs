@@ -1,9 +1,8 @@
-//! `#[derive(FunctionCall)]` (open_ai_rust_fn_call_extension 0.3) feeds straight into a strict
-//! `json_schema` response format via `ResponseFormat::for_type`.
+//! `#[derive(FunctionCall)]` (open_ai_rust_fn_call_extension >= 0.3.1) feeds straight into a
+//! strict `json_schema` response format via `ResponseFormat::for_type`. Since 0.3.1 the derive
+//! emits fully qualified paths, so only the derive macro needs importing.
 
-// The 0.3 derive expands to unqualified `FunctionCall` / `FunctionParameter` / `FunctionType`
-// paths, so they must be in scope alongside the derive macro of the same name.
-use open_ai_rust::{FunctionCall, FunctionParameter, FunctionType, ResponseFormat};
+use open_ai_rust::ResponseFormat;
 use open_ai_rust_fn_call_extension::FunctionCall;
 use serde_json::json;
 
